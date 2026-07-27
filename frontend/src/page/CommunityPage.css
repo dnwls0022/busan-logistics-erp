@@ -1,0 +1,260 @@
+/* CommunityPage.css */
+
+.community-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+.community-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.community-title {
+  font-size: 26px;
+  color: #2c1e1a;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.community-subtitle {
+  color: #795548;
+  font-size: 14px;
+}
+
+.card-box {
+  background-color: #fffdf9;
+  border-radius: 12px;
+  border: 1px solid #d7ccc8;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(44, 30, 26, 0.05);
+}
+
+.form-title {
+  margin-bottom: 20px;
+  color: #3e2723;
+}
+
+.write-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.common-input {
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #d7ccc8;
+  font-size: 14px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.common-input.flex-1 {
+  flex: 1;
+}
+
+.common-input.textarea {
+  resize: vertical;
+}
+
+.common-input.bg-white {
+  background-color: #fff;
+}
+
+.form-btn-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.submit-btn {
+  background-color: #5d4037;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  borderRadius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.submit-btn.comment-submit {
+  padding: 8px 16px;
+}
+
+.cancel-btn {
+  background-color: #e0d8d0;
+  color: #4e342e;
+  border: none;
+  padding: 10px 20px;
+  borderRadius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #795548;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 15px;
+  font-size: 14px;
+  padding: 0;
+}
+
+.detail-header {
+  border-bottom: 1px solid #d7ccc8;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.branch-badge {
+  font-size: 12px;
+  background-color: #efebe9;
+  color: #5d4037;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.branch-badge.small {
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+.detail-title {
+  font-size: 20px;
+  color: #2c1e1a;
+  margin-top: 10px;
+}
+
+.detail-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #8d6e63;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.detail-content {
+  min-height: 150px;
+  color: #4e342e;
+  line-height: 1.6;
+  font-size: 15px;
+  margin-bottom: 30px;
+}
+
+.comment-section {
+  background-color: #f5f0eb;
+  padding: 15px;
+  borderRadius: 8px;
+}
+
+.comment-title {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #5d4037;
+}
+
+.comment-form {
+  display: flex;
+  gap: 10px;
+}
+
+.list-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.list-count-text {
+  font-size: 14px;
+  color: #6d4c41;
+}
+
+.table-wrap {
+  background-color: #fffdf9;
+  border-radius: 12px;
+  border: 1px solid #d7ccc8;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(44,30,26,0.05);
+}
+
+.community-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.community-table th {
+  background-color: #efebe9;
+  color: #4e342e;
+  font-size: 13px;
+  border-bottom: 1px solid #d7ccc8;
+  padding: 12px 15px;
+}
+
+.community-table td {
+  padding: 14px 15px;
+  border-bottom: 1px solid #f0e6df;
+}
+
+.community-table tr {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.community-table tr:hover {
+  background-color: #fcf8f5;
+}
+
+.td-center {
+  text-align: center;
+}
+
+.td-id {
+  color: #8d6e63;
+  font-size: 13px;
+  width: 80px;
+}
+
+.td-branch {
+  width: 130px;
+}
+
+.td-post-title {
+  font-weight: bold;
+  color: #3e2723;
+}
+
+.td-author {
+  color: #5d4037;
+  font-size: 13px;
+  width: 100px;
+}
+
+.td-date, .td-views {
+  color: #8d6e63;
+  font-size: 13px;
+  width: 100px;
+}
+
+.td-views {
+  width: 70px;
+}

@@ -1,0 +1,48 @@
+/* App.css에 추가할 스타일 모음 */
+
+.page-input-box {
+  width: 65px;
+  text-align: center;
+  padding: 3px;
+  border-radius: 4px;
+  border: 1px solid #c8b7a6;
+  font-weight: bold;
+}
+
+.cart-empty-text {
+  text-align: center;
+  color: #8d7967;
+  padding: 50px 0;
+}
+
+.cart-item-title {
+  font-size: 13px;
+  margin: 0;
+}
+
+.cart-item-detail {
+  margin: 3px 0 0 0;
+  font-size: 12px;
+}
+
+.cart-quantity-text {
+  font-weight: bold;
+  font-size: 13px;
+  padding: 0 5px;
+}
+
+.budget-label {
+  font-size: 13px;
+  color: #8d7967;
+  font-weight: bold;
+}
+
+.budget-section-wrap {
+  margin-bottom: 15px;
+}
+
+.security-box-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 25px;
+}

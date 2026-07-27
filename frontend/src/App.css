@@ -449,9 +449,10 @@ body {
   border: 1px solid #e0d8d0;
   
   /* 오른쪽 상단 고정 스타일 */
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  position: fixed;   /* 또는 absolute */
+  top: 60px;         /* 위쪽에서 20px 떨어지게 */
+  right: 60px;       /* 오른쪽에서 30px 떨어지게 (보라색 위치) */
+  z-index: 1000;
 }
 .music-info {
   text-align: left;

@@ -204,7 +204,7 @@ function App() {
           <div className="pagination-zone">
             <button className="page-btn" onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1}>◀ Prev</button>
             
-            <div className="page-info" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+            <div className="page-info inline-flex-center">
               <input 
                 type="number" 
                 min={1} 
@@ -216,7 +216,7 @@ function App() {
                     setCurrentPage(page);
                   }
                 }}
-                style={{ width: '65px', textAlign: 'center', padding: '3px', borderRadius: '4px', border: '1px solid #c8b7a6', fontWeight: 'bold' }}
+                className="page-input-box"
               />
               <span>/ {totalPages} Page</span>
             </div>
@@ -227,22 +227,22 @@ function App() {
 
         <div className="right-sidebar">
           <div className="receipt-title">📋 CAFE INTEGRATED BILL</div>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ fontSize: '13px', color: '#8d7967', fontWeight: 'bold' }}>💵 통합 가용 예산 설정</label>
+          <div className="budget-section-wrap">
+            <label className="budget-label">💵 통합 가용 예산 설정</label>
             <input type="number" className="budget-input-box" value={userBudget} onChange={(e) => setUserBudget(Number(e.target.value))} />
           </div>
 
           <div className="cart-list">
-            {cart.length === 0 ? <p style={{ textAlign: 'center', color: '#8d7967', padding: '50px 0' }}>🛒 상품을 담아주세요.</p> :
+            {cart.length === 0 ? <p className="cart-empty-text">🛒 상품을 담아주세요.</p> :
               cart.map((c) => (
                 <div key={c.inventoryId} className="cart-item">
                   <div className="cart-item-info">
-                    <h4 style={{ fontSize: '13px', margin: 0 }}>{c.productName}</h4>
-                    <p style={{ margin: '3px 0 0 0', fontSize: '12px' }}>{c.price.toLocaleString()}원 × {c.orderQuantity}개</p>
+                    <h4 className="cart-item-title">{c.productName}</h4>
+                    <p className="cart-item-detail">{c.price.toLocaleString()}원 × {c.orderQuantity}개</p>
                   </div>
                   <div className="cart-item-control">
                     <button className="cart-btn-mini" onClick={() => updateCartQuantity(c.inventoryId, -1)}>-</button>
-                    <span style={{ fontWeight: 'bold', fontSize: '13px', padding: '0 5px' }}>{c.orderQuantity}</span>
+                    <span className="cart-quantity-text">{c.orderQuantity}</span>
                     <button className="cart-btn-mini" onClick={() => updateCartQuantity(c.inventoryId, 1)}>+</button>
                     <button className="cart-btn-delete" onClick={() => removeFromCart(c.inventoryId)}>X</button>
                   </div>
