@@ -154,7 +154,7 @@ function App() {
           </button>
         </div>
 
-        <p>부산 광역 물류 네트워크 시스템 - 26개 지점 통합 재고 관리 및 대시보드</p>
+        <p>부산 디저트카페 종합 관리 및 대시보드</p>
         <div className="cafe-title-line"></div>
       </div>
 

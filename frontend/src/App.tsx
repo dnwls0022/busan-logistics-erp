@@ -49,6 +49,9 @@ function App() {
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/mypage" element={<Mypage />} />
+          {/* 🟢 이 두 줄을 추가해 주세요! */}
+      <Route path="/oauth/naver" element={<Mypage />} />
+      <Route path="/oauth/kakao" element={<Mypage />} />
         </Routes>
       </div>
     </div>
