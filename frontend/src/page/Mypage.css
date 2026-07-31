@@ -1,21 +1,24 @@
-/* Mypage.css */
+/* Mypage.css - Refined Version */
 .mypage-container {
   max-width: 900px;
   margin: 0 auto;
-  font-family: sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   position: relative;
-  padding-bottom: 50px;
+  padding: 20px 20px 60px 20px;
+  box-sizing: border-box;
 }
 
 .mypage-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 }
 
 .mypage-title {
-  font-size: 26px;
+  font-size: 28px;
+  font-weight: 700;
   color: #2c1e1a;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
 }
 
 .mypage-subtitle {
@@ -24,127 +27,162 @@
 }
 
 .card {
-  background-color: #fffdf9;
-  border-radius: 12px;
-  border: 1px solid #d7ccc8;
-  padding: 30px;
-  box-shadow: 0 4px 12px rgba(44, 30, 26, 0.05);
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e6dbd5;
+  padding: 36px;
+  box-shadow: 0 10px 30px -5px rgba(44, 30, 26, 0.04);
+  transition: all 0.2s ease-in-out;
 }
 
 .security-card-margin {
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
+/* 상단 프로필 섹션 (버튼 정렬 및 유연한 구조) */
 .card-top-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #d7ccc8;
-  padding-bottom: 25px;
-  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 20px;
+  border-bottom: 1px solid #f0e6df;
+  padding-bottom: 28px;
+  margin-bottom: 28px;
 }
 
 .profile-info-wrap {
   display: flex;
   align-items: center;
-  gap: 25px;
+  gap: 20px;
+  flex: 1;
+  min-width: 280px;
 }
 
 .profile-avatar {
-  width: 80px;
-  height: 80px;
+  width: 76px;
+  height: 76px;
+  min-width: 76px;
   border-radius: 50%;
-  background-color: #5d4037;
+  background: linear-gradient(135deg, #6d4c41 0%, #4e342e 100%);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 28px;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(93, 64, 55, 0.2);
 }
 
 .profile-name-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .profile-name {
-  font-size: 22px;
+  font-size: 18px;
+  font-weight: 700;
   color: #2c1e1a;
   margin: 0;
+  word-break: break-all;
 }
 
 .branch-badge {
   font-size: 11px;
-  background-color: #efebe9;
-  color: #5d4037;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: bold;
+  background-color: #f5efe6;
+  color: #6d4c41;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  border: 1px solid #e7dfd3;
+  white-space: nowrap;
 }
 
 .profile-role {
   color: #8d6e63;
-  font-size: 14px;
+  font-size: 13px;
   margin: 6px 0 0 0;
 }
 
+/* 우측 버튼 그룹 전체 수평 및 중앙 정렬 */
 .action-buttons-wrap {
   display: flex;
-  gap: 12px;
   align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .signup-column {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
+  gap: 10px;
 }
 
 .welcome-user-text {
   font-size: 13px;
-  font-weight: bold;
+  font-weight: 600;
   color: #3e2723;
-  margin-bottom: 4px;
+  white-space: nowrap;
 }
 
 .signup-button {
-  background-color: #efebe9;
+  background-color: #f5efe6;
   color: #5d4037;
   border: 1px solid #d7ccc8;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-weight: bold;
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
   font-size: 13px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.signup-button:hover {
+  background-color: #ebe2d5;
 }
 
 .auth-button-logout {
-  background-color: #d7ccc8;
-  color: #3e2723;
+  background-color: #f0e6df;
+  color: #4e342e;
   border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-weight: bold;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
   font-size: 13px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.auth-button-logout:hover {
+  background-color: #e4d7ce;
 }
 
 .auth-button-login {
-  background-color: #5d4037;
+  background-color: #4e342e;
   color: #fff;
   border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-weight: bold;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
   font-size: 13px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.auth-button-login:hover {
+  background-color: #3e2723;
 }
 
 .section-title {
   font-size: 16px;
-  color: #3e2723;
-  margin-bottom: 15px;
+  font-weight: 700;
+  color: #2c1e1a;
+  margin-bottom: 16px;
   margin-top: 0;
 }
 
@@ -153,177 +191,229 @@
 }
 
 .security-title-wrap {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
 .edit-form-wrap {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 }
 
 .form-group-label {
   display: block;
-  font-size: 13px;
-  color: #8d6e63;
-  margin-bottom: 5px;
-  font-weight: bold;
+  font-size: 12px;
+  color: #795548;
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .form-input {
-  padding: 10px 12px;
-  border-radius: 6px;
+  padding: 11px 14px;
+  border-radius: 8px;
   border: 1px solid #d7ccc8;
   font-size: 14px;
   outline: none;
   width: 100%;
   box-sizing: border-box;
-  background-color: #fff;
+  background-color: #faf8f5;
   margin-bottom: 10px;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  border-color: #6d4c41;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(109, 76, 65, 0.1);
 }
 
 .form-buttons-wrap {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .info-footer-wrap {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .cancel-button {
-  background-color: #e0d8d0;
+  background-color: #f0e6df;
   color: #4e342e;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: bold;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.cancel-button:hover {
+  background-color: #e4d7ce;
 }
 
 .submit-button {
-  background-color: #5d4037;
+  background-color: #4e342e;
   color: #fff;
   border: none;
   padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: bold;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #3e2723;
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
-  padding: 14px 0;
-  border-bottom: 1px solid #f0e6df;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #f4eeea;
   font-size: 14px;
+  gap: 16px;
 }
 
 .info-row-last {
   display: flex;
   justify-content: space-between;
-  padding: 14px 0;
+  align-items: center;
+  padding: 15px 0;
   border-bottom: none;
   font-size: 14px;
+  gap: 16px;
 }
 
 .info-label {
-  color: #8d6e63;
-  font-weight: bold;
+  color: #795548;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .info-value {
-  color: #3e2723;
+  color: #2c1e1a;
+  font-weight: 600;
+  word-break: break-all;
+  text-align: right;
 }
 
 .security-box {
-  background-color: #f9f6f0;
-  border: 1px solid #efebe9;
-  border-radius: 8px;
+  background-color: #faf8f5;
+  border: 1px solid #e7dfd3;
+  border-radius: 10px;
   padding: 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 14px;
   color: #3e2723;
+  gap: 10px;
 }
 
 .security-badge {
   background-color: #e8f5e9;
   color: #2e7d32;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* 모달 관련 스타일 */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(44, 30, 26, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 16px;
 }
 
 .modal-content {
-  background-color: #fffdf9;
-  border-radius: 12px;
-  border: 1px solid #d7ccc8;
-  padding: 30px;
-  width: 420px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e6dbd5;
+  padding: 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
   box-sizing: border-box;
   position: relative;
+  animation: modalUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-modal-width {
-  width: 420px;
+  max-width: 420px;
 }
 
 .modal-close-wrap {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 
 .modal-close-btn {
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
-  color: #5d4037;
-  padding: 0;
+  color: #8d6e63;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+  color: #2c1e1a;
 }
 
 .modal-header-wrap {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .modal-top-subtitle {
   font-size: 12px;
-  color: #795548;
+  color: #8d6e63;
+  font-weight: 500;
 }
 
 .modal-top-title {
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 700;
   color: #2c1e1a;
-  margin: 5px 0 0 0;
+  margin: 6px 0 0 0;
 }
 
 .login-tabs-wrap {
   display: flex;
-  border-bottom: 2px solid #d7ccc8;
-  margin-bottom: 20px;
+  border-bottom: 1px solid #e6dbd5;
+  margin-bottom: 24px;
 }
 
 .login-tab-btn-active {
@@ -331,12 +421,12 @@
   padding: 12px;
   background: none;
   border: none;
-  border-bottom: 3px solid #5d4037;
-  color: #3e2723;
-  font-weight: bold;
+  border-bottom: 2px solid #4e342e;
+  color: #4e342e;
+  font-weight: 700;
   cursor: pointer;
   font-size: 14px;
-  margin-bottom: -2px;
+  margin-bottom: -1px;
 }
 
 .login-tab-btn-inactive {
@@ -344,12 +434,12 @@
   padding: 12px;
   background: none;
   border: none;
-  border-bottom: 3px solid transparent;
-  color: #8d6e63;
-  font-weight: normal;
+  border-bottom: 2px solid transparent;
+  color: #a1887f;
+  font-weight: 500;
   cursor: pointer;
   font-size: 14px;
-  margin-bottom: -2px;
+  margin-bottom: -1px;
 }
 
 .login-form-layout {
@@ -358,56 +448,67 @@
 }
 
 .login-submit-button {
-  background-color: #5d4037;
+  background-color: #4e342e;
   color: #fff;
   border: none;
-  padding: 12px;
-  border-radius: 6px;
-  font-weight: bold;
+  padding: 13px;
+  border-radius: 8px;
+  font-weight: 700;
   cursor: pointer;
   font-size: 15px;
-  margin-top: 5px;
+  margin-top: 8px;
   width: 100%;
+  transition: background-color 0.2s;
+}
+
+.login-submit-button:hover {
+  background-color: #3e2723;
 }
 
 .oauth-section-wrap {
-  margin-top: 20px;
+  margin-top: 24px;
   text-align: center;
-  border-top: 1px solid #efebe9;
-  padding-top: 15px;
+  border-top: 1px solid #f4eeea;
+  padding-top: 18px;
 }
 
 .oauth-section-label {
   display: block;
   font-size: 12px;
   color: #8d6e63;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  font-weight: 500;
 }
 
 .oauth-buttons-wrap {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .oauth-btn-google {
   flex: 1;
-  padding: 10px 0;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 12px;
+  padding: 11px 0;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
   background-color: #ffffff;
-  color: #444444;
+  color: #333333;
   border: 1px solid #d7ccc8;
+  transition: background-color 0.2s;
+}
+
+.oauth-btn-google:hover {
+  background-color: #fcfcfc;
 }
 
 .oauth-btn-naver {
   flex: 1;
-  padding: 10px 0;
-  border-radius: 6px;
+  padding: 11px 0;
+  border-radius: 8px;
   border: none;
-  font-weight: bold;
-  font-size: 12px;
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
   background-color: #03c75a;
   color: #ffffff;
@@ -415,11 +516,11 @@
 
 .oauth-btn-kakao {
   flex: 1;
-  padding: 10px 0;
-  border-radius: 6px;
+  padding: 11px 0;
+  border-radius: 8px;
   border: none;
-  font-weight: bold;
-  font-size: 12px;
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
   background-color: #fee500;
   color: #191919;
@@ -429,11 +530,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .signup-modal-title {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 700;
   color: #2c1e1a;
   margin: 0;
 }
@@ -445,5 +547,5 @@
 
 .signup-submit-margin {
   width: 100%;
-  margin-top: 10px;
+  margin-top: 14px;
 }

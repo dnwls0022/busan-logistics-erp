@@ -71,13 +71,13 @@ export default function Mypage() {
   const handleGoogleResponse = async (response: any) => {
     try {
       const tokenPayload = parseJwt(response.credential);
-      const socialData = { email: tokenPayload.email, name: tokenPayload.name, provider: 'google', phone: '' };
+      const socialData = { email: tokenPayload.email, name: tokenPayload.email, provider: 'google', phone: '' };
 
       const res = await axios.post('http://localhost:8080/api/users/social-login', socialData);
-      setUserInfo(prev => ({ ...prev, name: res.data.name, email: res.data.email }));
+      setUserInfo(prev => ({ ...prev, name: res.data.email, email: res.data.email }));
       setIsLoggedIn(true);
       setIsLoginModalOpen(false);
-      alert(`환영합니다, ${res.data.name}님! 구글 계정으로 로그인되었습니다.`);
+      alert(`환영합니다, ${res.data.email}님! 구글 계정으로 로그인되었습니다.`);
     } catch (error) {
       console.error('구글 로그인 연동 실패:', error);
     }
@@ -86,9 +86,9 @@ export default function Mypage() {
   const handleNaverCallback = async (code: string) => {
     try {
       const res = await axios.post('http://localhost:8080/api/users/naver-login', { code });
-      setUserInfo(prev => ({ ...prev, name: res.data.name, email: res.data.email }));
+      setUserInfo(prev => ({ ...prev, name: res.data.email, email: res.data.email }));
       setIsLoggedIn(true);
-      alert(`환영합니다, ${res.data.name}님! 네이버 계정으로 로그인되었습니다.`);
+      alert(`환영합니다, ${res.data.email}님! 네이버 계정으로 로그인되었습니다.`);
       window.history.replaceState({}, document.title, "/mypage");
     } catch (e) {
       console.error('네이버 로그인 처리 실패', e);
@@ -98,9 +98,9 @@ export default function Mypage() {
   const handleKakaoCallback = async (code: string) => {
     try {
       const res = await axios.post('http://localhost:8080/api/users/kakao-login', { code });
-      setUserInfo(prev => ({ ...prev, name: res.data.name, email: res.data.email }));
+      setUserInfo(prev => ({ ...prev, name: res.data.email, email: res.data.email }));
       setIsLoggedIn(true);
-      alert(`환영합니다, ${res.data.name}님! 카카오 계정으로 로그인되었습니다.`);
+      alert(`환영합니다, ${res.data.email}님! 카카오 계정으로 로그인되었습니다.`);
       window.history.replaceState({}, document.title, "/mypage");
     } catch (e) {
       console.error('카카오 로그인 처리 실패', e);
@@ -126,12 +126,12 @@ export default function Mypage() {
               .then(res => res.json())
               .then(async (data) => {
                 const res = await axios.post('http://localhost:8080/api/users/social-login', {
-                  email: data.email, name: data.name, provider: 'google', phone: ''
+                  email: data.email, name: data.email, provider: 'google', phone: ''
                 });
-                setUserInfo(prev => ({ ...prev, name: res.data.name, email: res.data.email }));
+                setUserInfo(prev => ({ ...prev, name: res.data.email, email: res.data.email }));
                 setIsLoggedIn(true);
                 setIsLoginModalOpen(false);
-                alert(`환영합니다, ${res.data.name}님!`);
+                alert(`환영합니다, ${res.data.email}님!`);
               });
           }
         },
@@ -249,7 +249,7 @@ export default function Mypage() {
 
       <div className="card security-card-margin">
         <div className="security-title-wrap">
-          <h4 className="section-title security-title-reset">🔒 보안 및 최근 활동</h4>
+          <h4 className="section-title security-title-reset">🔒 최근 활동</h4>
         </div>
         <div className="security-box">
           <span>최근 접속 일시: <strong>{accessTime}</strong> (부산 본사 IP)</span>

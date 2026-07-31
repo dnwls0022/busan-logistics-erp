@@ -84,7 +84,7 @@
   color: #fff;
   border: none;
   padding: 10px 20px;
-  borderRadius: 6px;
+  border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
   font-size: 14px;
@@ -100,7 +100,7 @@
   color: #4e342e;
   border: none;
   padding: 10px 20px;
-  borderRadius: 6px;
+  border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
   font-size: 14px;
@@ -162,7 +162,7 @@
 .comment-section {
   background-color: #f5f0eb;
   padding: 15px;
-  borderRadius: 8px;
+  border-radius: 8px;
 }
 
 .comment-title {
