@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './CommunityPage.css';
 
 interface Post {
@@ -9,8 +9,9 @@ interface Post {
   date: string;
   views: number;
   content: string;
-  category: string; // 💡 카테고리 필드 추가
-  likes: number;     // 💡 좋아요(도움돼요) 수 추가
+  category: string;
+  likes: number;
+  viewedUsers?: string[]; // 💡 계정별 조회 중복 방지를 위한 조회 기록 배열
 }
 
 interface Comment {
@@ -20,12 +21,84 @@ interface Comment {
   date: string;
 }
 
+// 초기 기본 게시글 데이터
+const initialPosts: Post[] = [
+  { 
+    id: 7, 
+    title: '[필독] 2026년 하반기 전 지점 위생 및 세스코 방역 점검 안내', 
+    author: '관리자', 
+    branch: '본사 운영팀', 
+    date: '2026-06-15', 
+    views: 84, 
+    content: '하반기 전 지점 위생 점검 일정을 공지합니다. 첨부된 매뉴얼을 참고하시어 사전 점검에 만전을 기해 주시기 바랍니다.', 
+    category: '공지사항', 
+    likes: 12,
+    viewedUsers: []
+  },
+  { 
+    id: 6, 
+    title: '[보안] ERP 시스템 계정 관리 및 개인정보 보호 수칙 준수', 
+    author: '관리자', 
+    branch: '본사 시스템팀', 
+    date: '2026-06-12', 
+    views: 112, 
+    content: '최근 보안 사고 예방을 위해 모든 임직원께서는 주기적인 비밀번호 변경 및 공용 PC 로그아웃을 철저히 생활해 주시기 바랍니다.', 
+    category: '공지사항', 
+    likes: 19,
+    viewedUsers: []
+  },
+  { 
+    id: 5, 
+    title: '6월 두 번째 주 스페셜 원두 납품 일정 변경 안내', 
+    author: '박물류', 
+    branch: '본사 물류팀', 
+    date: '2026-06-10', 
+    views: 95, 
+    content: '지방선거 공휴일 물류 센터 휴무로 인해 이번 주 원두 배송이 기존보다 하루씩 지연될 예정이오니 영업에 차질 없으시길 바랍니다.', 
+    category: '원두/재고', 
+    likes: 8,
+    viewedUsers: []
+  },
+  { 
+    id: 4, 
+    title: '여름 시즌 신메뉴 "콜드브루 하와이안 라떼" 레시피 공유', 
+    author: '이개발', 
+    branch: '본사 R&D팀', 
+    date: '2026-06-08', 
+    views: 176, 
+    content: '다음 달 출시되는 여름 시즌 신메뉴 레시피 매뉴얼과 파우더 계량 가이드를 등록합니다. 각 지점에서는 미리 숙지해 주세요.', 
+    category: '물류/아이디어', 
+    likes: 31,
+    viewedUsers: []
+  },
+  { id: 3, title: '부산 서면점 원두 재고 부족 관련 공유합니다.', author: '김지점', branch: '부산 서면점', date: '2026-06-07', views: 42, content: '이번 주말 주문량이 급증하여 서면점 아메리카노 원두 재고가 빠듯합니다. 인근 지점 여유분 공유 부탁드려요!', category: '원두/재고', likes: 5, viewedUsers: [] },
+  { id: 2, title: '물류 배송 차량 경로 최적화 아이디어 제안', author: '박물류', branch: '본사 물류팀', date: '2026-06-05', views: 128, content: '해운대구와 수영구 통합 배송 노선을 조정하면 유류비를 약 15% 아낄 수 있을 것 같습니다. 상세 파일 첨부합니다.', category: '물류/아이디어', likes: 14, viewedUsers: [] },
+  { id: 1, title: 'CAFE LOGISTICS ERP 시스템 오픈을 축하드립니다!', author: '관리자', branch: '본사 시스템팀', date: '2026-06-01', views: 256, content: '드디어 26개 지점 통합 재고 관리 및 대시보드가 오픈되었습니다. 원활한 소통을 위해 본 게시판을 적극 활용해 주세요.', category: '공지사항', likes: 23, viewedUsers: [] },
+];
+
 export default function CommunityPage() {
-  const [posts, setPosts] = useState<Post[]>([
-    { id: 3, title: '부산 서면점 원두 재고 부족 관련 공유합니다.', author: '김지점', branch: '부산 서면점', date: '2026-06-07', views: 42, content: '이번 주말 주문량이 급증하여 서면점 아메리카노 원두 재고가 빠듯합니다. 인근 지점 여유분 공유 부탁드려요!', category: '원두/재고', likes: 5 },
-    { id: 2, title: '물류 배송 차량 경로 최적화 아이디어 제안', author: '박물류', branch: '본사 물류팀', date: '2026-06-05', views: 128, content: '해운대구와 수영구 통합 배송 노선을 조정하면 유류비를 약 15% 아낄 수 있을 것 같습니다. 상세 파일 첨부합니다.', category: '물류/아이디어', likes: 14 },
-    { id: 1, title: 'CAFE LOGISTICS ERP 시스템 오픈을 축하드립니다!', author: '관리자', branch: '본사 시스템팀', date: '2026-06-01', views: 256, content: '드디어 26개 지점 통합 재고 관리 및 대시보드가 오픈되었습니다. 원활한 소통을 위해 본 게시판을 적극 활용해 주세요.', category: '공지사항', likes: 23 },
-  ]);
+  // 💡 현재 로그인한 사용자 계정 (실제 프로젝트 환경에 맞춰 변경 가능, 테스트용 기본값 '관리자')
+  const [currentUser] = useState<string>(() => {
+    return localStorage.getItem('erp_current_user') || '관리자';
+  });
+
+  // 💡 브라우저 localStorage에서 데이터를 불러오거나 없으면 기본값 사용[cite: 3]
+  const [posts, setPosts] = useState<Post[]>(() => {
+    const savedPosts = localStorage.getItem('erp_community_posts');
+    if (savedPosts) {
+      try {
+        return JSON.parse(savedPosts);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return initialPosts;
+  });
+
+  // posts가 변경될 때마다 localStorage에 자동 저장[cite: 3]
+  useEffect(() => {
+    localStorage.setItem('erp_community_posts', JSON.stringify(posts));
+  }, [posts]);
 
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
@@ -52,6 +125,30 @@ export default function CommunityPage() {
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
 
+  // 🖱️ 게시글 클릭 시 조회수 중복 방지 및 증가 처리 핸들러
+  const handleSelectPost = (post: Post) => {
+    const viewedList = post.viewedUsers || [];
+    
+    let updatedPosts = posts;
+    // 현재 로그인한 계정이 이 글을 아직 본 적이 없다면 조회수 증가 및 기록
+    if (!viewedList.includes(currentUser)) {
+      updatedPosts = posts.map(p => {
+        if (p.id === post.id) {
+          return {
+            ...p,
+            views: p.views + 1,
+            viewedUsers: [...(p.viewedUsers || []), currentUser]
+          };
+        }
+        return p;
+      });
+      setPosts(updatedPosts);
+    }
+
+    const clickedPost = updatedPosts.find(p => p.id === post.id);
+    setSelectedPost(clickedPost || post);
+  };
+
   // ✏️ 게시글 등록 핸들러
   const handleCreatePost = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,15 +158,16 @@ export default function CommunityPage() {
     }
 
     const newPostItem: Post = {
-      id: posts.length + 1,
+      id: posts.length > 0 ? Math.max(...posts.map(p => p.id)) + 1 : 1,
       title: newTitle,
       author: newAuthor,
       branch: newBranch || '본사',
       date: new Date().toISOString().split('T')[0],
-      views: 1,
+      views: 0, // 처음 등록 시 조회수 0부터 시작
       content: newContent,
       category: newCategory,
       likes: 0,
+      viewedUsers: [],
     };
 
     setPosts([newPostItem, ...posts]);
@@ -81,9 +179,17 @@ export default function CommunityPage() {
     setNewCategory('원두/재고');
   };
 
+  // 🗑️ 게시글 삭제 핸들러
+  const handleDeletePost = (postId: number) => {
+    if (window.confirm('정말 이 게시글을 삭제하시겠습니까?')) {
+      setPosts(posts.filter(p => p.id !== postId));
+      setSelectedPost(null);
+    }
+  };
+
   // 👍 좋아요(도움돼요) 증가 핸들러
   const handleLike = (postId: number, e: React.MouseEvent) => {
-    e.stopPropagation(); // 행 클릭 이벤트(상세보기 이동) 전파 방지
+    e.stopPropagation();
     setPosts(posts.map(p => {
       if (p.id === postId) {
         return { ...p, likes: p.likes + 1 };
@@ -106,7 +212,7 @@ export default function CommunityPage() {
     const currentComments = commentsMap[selectedPost.id] || [];
     const newComment: Comment = {
       id: Date.now(),
-      author: '조우진',
+      author: currentUser, // 현재 로그인한 계정명 반영
       content: commentInput,
       date: new Date().toISOString().split('T')[0],
     };
@@ -236,7 +342,16 @@ export default function CommunityPage() {
         </div>
       ) : selectedPost ? (
         <div className="card-box">
-          <button onClick={() => setSelectedPost(null)} className="back-btn">← 목록으로 돌아가기</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+            <button onClick={() => setSelectedPost(null)} className="back-btn" style={{ margin: 0 }}>← 목록으로 돌아가기</button>
+            <button 
+              onClick={() => handleDeletePost(selectedPost.id)} 
+              style={{ background: '#ffebee', color: '#c62828', border: '1px solid #ef9a9a', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              🗑️ 글 삭제하기
+            </button>
+          </div>
+
           <div className="detail-header">
             <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
               <span className="branch-badge">[{selectedPost.category}]</span>
@@ -356,7 +471,7 @@ export default function CommunityPage() {
             <span className="list-count-text">검색된 이야기: <strong>{filteredPosts.length}</strong>개</span>
           </div>
 
-          <div className="table-wrap">
+          <div className="table-wrap" style={{ maxHeight: '620px', overflowY: 'auto' }}>
             <table className="community-table">
               <thead>
                 <tr>
@@ -376,7 +491,7 @@ export default function CommunityPage() {
                   </tr>
                 ) : (
                   filteredPosts.map((post) => (
-                    <tr key={post.id} onClick={() => setSelectedPost(post)}>
+                    <tr key={post.id} onClick={() => handleSelectPost(post)}>
                       <td className="td-center td-id">{post.id}</td>
                       <td className="td-center td-branch" style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                         <span className="branch-badge small" style={{ background: '#e0d8d0' }}>{post.category}</span>

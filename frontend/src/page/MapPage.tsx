@@ -1,115 +1,156 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import './MapPage.css';
 
-// 샘플 지점 데이터 (부산 지역 중심)
+declare global {
+  interface Window {
+    kakao: any;
+  }
+}
+
+// 실제 부산 인기 디저트 카페 10곳 (로드뷰 및 지도 데이터 완비)
 const branches = [
-  { id: 1, name: '부산 본사 물류센터', address: '부산광역시 부산진구 중앙대로 708', status: '정상 운영', stock: '98%' },
-  { id: 2, name: '해운대 센텀점', address: '부산광역시 해운대구 센텀중앙로 79', status: '정상 운영', stock: '85%' },
-  { id: 3, name: '서면 1호점', address: '부산광역시 부산진구 서전로 37', status: '혼잡', stock: '42%' },
-  { id: 4, name: '남포동 국제시장점', address: '부산광역시 중구 창선동 1가 12', status: '정상 운영', stock: '91%' },
-  { id: 5, name: '동래 온천점', address: '부산광역시 동래구 중앙대로 1381', status: '점검 중', stock: '10%' },
+  { id: 1, name: '전포 카페거리 희와제과', address: '부산광역시 부산진구 서전로37번길 27', status: '정상 운영', stock: '95%' },
+  { id: 2, name: '광안리 초희', address: '부산광역시 수영구 광남로94번길 16', status: '정상 운영', stock: '88%' },
+  { id: 3, name: '해운대 전포목걸이빵 랜드마크', address: '부산광역시 해운대구 우동1로 38', status: '혼잡', stock: '42%' },
+  { id: 4, name: '남포동 깡통시장 르브레드랩', address: '부산광역시 중구 부평1길 39', status: '정상 운영', stock: '91%' },
+  { id: 5, name: '동래 온천장 모모스커피', address: '부산광역시 동래구 시실로 23', status: '정상 운영', stock: '76%' },
+  { id: 6, name: '전포동 베이커스', address: '부산광역시 부산진구 동천로 55', status: '혼잡', stock: '35%' },
+  { id: 7, name: '송정리 빈스톡', address: '부산광역시 해운대구 송정해변로 50', status: '정상 운영', stock: '80%' },
+  { id: 8, name: '영도 피아크 디저트카페', address: '부산광역시 영도구 해양로 195', status: '정상 운영', stock: '90%' },
+  { id: 9, name: '서면 전포카페거리 로우앤스위트', address: '부산광역시 부산진구 동성로 25', status: '점검 중', stock: '15%' },
+  { id: 10, name: '센텀시티 신세계백화점 삼진어묵/디저트관', address: '부산광역시 해운대구 센텀남대로 35', status: '정상 운영', stock: '98%' },
 ];
 
-export default function BranchMap() {
+export default function MapPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBranch, setSelectedBranch] = useState(branches[0]);
 
-  // 검색 필터링
   const filteredBranches = branches.filter(b => 
     b.name.includes(searchTerm) || b.address.includes(searchTerm)
   );
 
-  return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', fontFamily: 'sans-serif', paddingBottom: '40px' }}>
+  useEffect(() => {
+    if (!window.kakao || !window.kakao.maps) return;
+
+    window.kakao.maps.load(() => {
+      const container = document.getElementById('kakao-map');
+      const roadviewContainer = document.getElementById('kakao-roadview');
       
-      {/* 상단 타이틀 */}
-      <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h2 style={{ fontSize: '26px', color: '#2c1e1a', marginBottom: '8px' }}>
-          🗺️ 지점 지도 보기 페이지
-        </h2>
-        <p style={{ color: '#795548', fontSize: '14px' }}>부산 지역 주요 지점의 실시간 위치와 물류 현황을 한눈에 확인할 수 있습니다.</p>
+      if (!container || !roadviewContainer) return;
+
+      const options = {
+        center: new window.kakao.maps.LatLng(35.1796, 129.0756),
+        level: 3
+      };
+
+      // 1. 지도 생성
+      const map = new window.kakao.maps.Map(container, options);
+      const geocoder = new window.kakao.maps.services.Geocoder();
+
+      // 2. 로드뷰 생성기 설정
+      const roadview = new window.kakao.maps.Roadview(roadviewContainer);
+      const roadviewClient = new window.kakao.maps.RoadviewClient();
+
+      geocoder.addressSearch(selectedBranch.address, (result: any, status: any) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
+
+          // 지도 마커 표시
+          const marker = new window.kakao.maps.Marker({
+            map: map,
+            position: coords
+          });
+
+          const infowindow = new window.kakao.maps.InfoWindow({
+            content: `<div style="padding:6px 10px;font-size:12px;font-weight:bold;text-align:center;color:#3e2723;background:#fff;border-radius:4px;">${selectedBranch.name}</div>`
+          });
+          infowindow.open(map, marker);
+
+          map.setCenter(coords);
+
+          // 3. 로드뷰 검색 반경 내에서 파노라마 ID 탐색 후 렌더링
+          roadviewClient.getNearestPanoId(coords, 300, (panoId: any) => {
+            if (panoId) {
+              roadview.setPanoId(panoId, coords);
+            }
+          });
+
+          setTimeout(() => {
+            map.relayout();
+            roadview.relayout();
+            map.setCenter(coords);
+          }, 150);
+        }
+      });
+    });
+  }, [selectedBranch]);
+
+  return (
+    <div className="map-page-container">
+      
+      <div className="map-header">
+        <h2 className="map-title">🧁 부산 인기 디저트 카페 종합 관리 지도 및 로드뷰</h2>
+        <p className="map-subtitle">부산 지역 유명 가맹점의 실시간 위치 지도와 주변 실제 거리(로드뷰)를 확인합니다.</p>
       </div>
 
-      {/* 메인 레이아웃 (좌측: 지점 리스트 / 우측: 지도 및 상세 정보) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '20px', height: '600px' }}>
+      <div className="map-layout">
         
-        {/* 📋 좌측: 지점 검색 및 리스트 */}
-        <div style={cardStyle}>
-          <h4 style={{ fontSize: '15px', color: '#3e2723', marginBottom: '15px' }}>📍 지점 검색 및 목록</h4>
+        {/* 좌측 리스트 */}
+        <div className="card-box">
+          <h4 className="section-title">📍 부산 인기 카페 검색 및 목록 ({branches.length}개 지점)</h4>
           
-          {/* 검색창 */}
           <input 
             type="text" 
-            placeholder="지점명 또는 주소 검색..." 
+            placeholder="카페명 또는 주소 검색..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={inputStyle}
+            className="search-input"
           />
 
-          {/* 지점 스크롤 리스트 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', height: '440px', paddingRight: '5px' }}>
+          <div className="branch-list-scroll">
             {filteredBranches.map((branch) => {
               const isSelected = selectedBranch.id === branch.id;
               return (
                 <div 
                   key={branch.id} 
                   onClick={() => setSelectedBranch(branch)}
-                  style={{
-                    backgroundColor: isSelected ? '#efebe9' : '#fff',
-                    border: isSelected ? '1px solid #8d6e63' : '1px solid #d7ccc8',
-                    padding: '14px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    transition: '0.2s',
-                  }}
+                  className={`branch-item ${isSelected ? 'selected' : ''}`}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <strong style={{ fontSize: '14px', color: '#3e2723' }}>{branch.name}</strong>
-                    <span style={{ 
-                      fontSize: '11px', 
-                      padding: '2px 6px', 
-                      borderRadius: '4px',
-                      backgroundColor: branch.status === '정상 운영' ? '#e8f5e9' : branch.status === '혼잡' ? '#fff3e0' : '#ffebee',
-                      color: branch.status === '정상 운영' ? '#2e7d32' : branch.status === '혼잡' ? '#ef6c00' : '#c62828',
-                      fontWeight: 'bold'
-                    }}>
+                  <div className="branch-item-header">
+                    <strong className="branch-name">{branch.name}</strong>
+                    <span className={`branch-status ${branch.status === '정상 운영' ? 'normal' : branch.status === '혼잡' ? 'busy' : 'check'}`}>
                       {branch.status}
                     </span>
                   </div>
-                  <p style={{ fontSize: '12px', color: '#795548', margin: 0 }}>{branch.address}</p>
+                  <p className="branch-address">{branch.address}</p>
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* 🗺️ 우측: 지도 영역 및 선택된 지점 정보 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* 우측 지도 + 로드뷰 영역 */}
+        <div className="map-right-section">
           
-          {/* 지도 모사 시각화 박스 (실제 카카오/네이버맵 연동 시 이 자리에 지도 컴포넌트 삽입) */}
-          <div style={{ ...cardStyle, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#efe8e1', position: 'relative', overflow: 'hidden' }}>
-            
-            {/* 가상의 지도 배경 디자인 요소 */}
-            <div style={{ position: 'absolute', inset: 0, opacity: 0.15, backgroundImage: 'radial-gradient(#5d4037 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-            
-            <div style={{ textAlign: 'center', zIndex: 1 }}>
-              <div style={{ fontSize: '48px', marginBottom: '10px' }}>📌</div>
-              <h3 style={{ fontSize: '20px', color: '#2c1e1a', margin: '0 0 5px 0' }}>{selectedBranch.name}</h3>
-              <p style={{ fontSize: '13px', color: '#5d4037', margin: '0 0 15px 0' }}>{selectedBranch.address}</p>
-              <span style={{ backgroundColor: '#5d4037', color: '#fff', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
-                실시간 위치 마커 활성화됨
-              </span>
-            </div>
+          {/* 지도 박스 */}
+          <div className="card-box map-card-wrapper">
+            <div id="kakao-map" className="kakao-map-container"></div>
           </div>
 
-          {/* 선택된 지점 상세 요약 패널 */}
-          <div style={{ ...cardStyle, padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* 로드뷰 박스 */}
+          <div className="card-box map-card-wrapper">
+            <div id="kakao-roadview" className="kakao-map-container"></div>
+          </div>
+
+          {/* 하단 정보 패널 */}
+          <div className="card-box info-panel">
+            <div className="info-panel-content">
               <div>
-                <span style={{ fontSize: '12px', color: '#8d6e63', fontWeight: 'bold' }}>선택된 지점 재고 여유율</span>
-                <h4 style={{ fontSize: '18px', color: '#3e2723', margin: '4px 0 0 0' }}>{selectedBranch.name} ({selectedBranch.stock})</h4>
+                <span className="info-label">선택된 카페 재고 여유율</span>
+                <h4 className="info-value">{selectedBranch.name} ({selectedBranch.stock})</h4>
               </div>
-              <button style={actionButtonStyle}>
-                📦 해당 지점 재고 상세 조회
+              <button className="action-button">
+                📦 해당 카페 재고 상세 조회
               </button>
             </div>
           </div>
@@ -121,36 +162,3 @@ export default function BranchMap() {
     </div>
   );
 }
-
-// 🎨 스타일 정의
-const cardStyle: React.CSSProperties = {
-  backgroundColor: '#fffdf9',
-  borderRadius: '12px',
-  border: '1px solid #d7ccc8',
-  padding: '24px',
-  boxShadow: '0 4px 12px rgba(44,30,26,0.05)',
-  boxSizing: 'border-box',
-};
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '10px 12px',
-  borderRadius: '6px',
-  border: '1px solid #d7ccc8',
-  fontSize: '13px',
-  outline: 'none',
-  boxSizing: 'border-box',
-  backgroundColor: '#fff',
-  marginBottom: '15px',
-};
-
-const actionButtonStyle: React.CSSProperties = {
-  backgroundColor: '#5d4037',
-  color: '#fff',
-  border: 'none',
-  padding: '10px 16px',
-  borderRadius: '6px',
-  fontWeight: 'bold',
-  cursor: 'pointer',
-  fontSize: '13px',
-};

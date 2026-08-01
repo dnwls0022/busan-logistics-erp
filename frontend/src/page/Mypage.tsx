@@ -78,8 +78,9 @@ export default function Mypage() {
       setIsLoggedIn(true);
       setIsLoginModalOpen(false);
       alert(`환영합니다, ${res.data.email}님! 구글 계정으로 로그인되었습니다.`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('구글 로그인 연동 실패:', error);
+      alert(error.response?.data || '구글 로그인에 실패했습니다.');
     }
   };
 
@@ -90,8 +91,9 @@ export default function Mypage() {
       setIsLoggedIn(true);
       alert(`환영합니다, ${res.data.email}님! 네이버 계정으로 로그인되었습니다.`);
       window.history.replaceState({}, document.title, "/mypage");
-    } catch (e) {
+    } catch (e: any) {
       console.error('네이버 로그인 처리 실패', e);
+      alert(e.response?.data || '네이버 로그인에 실패했습니다.');
     }
   };
 
@@ -102,8 +104,9 @@ export default function Mypage() {
       setIsLoggedIn(true);
       alert(`환영합니다, ${res.data.email}님! 카카오 계정으로 로그인되었습니다.`);
       window.history.replaceState({}, document.title, "/mypage");
-    } catch (e) {
+    } catch (e: any) {
       console.error('카카오 로그인 처리 실패', e);
+      alert(e.response?.data || '카카오 로그인에 실패했습니다.');
     }
   };
 
@@ -125,13 +128,17 @@ export default function Mypage() {
             })
               .then(res => res.json())
               .then(async (data) => {
-                const res = await axios.post('http://localhost:8080/api/users/social-login', {
-                  email: data.email, name: data.email, provider: 'google', phone: ''
-                });
-                setUserInfo(prev => ({ ...prev, name: res.data.email, email: res.data.email }));
-                setIsLoggedIn(true);
-                setIsLoginModalOpen(false);
-                alert(`환영합니다, ${res.data.email}님!`);
+                try {
+                  const res = await axios.post('http://localhost:8080/api/users/social-login', {
+                    email: data.email, name: data.email, provider: 'google', phone: ''
+                  });
+                  setUserInfo(prev => ({ ...prev, name: res.data.email, email: res.data.email }));
+                  setIsLoggedIn(true);
+                  setIsLoginModalOpen(false);
+                  alert(`환영합니다, ${res.data.email}님!`);
+                } catch (err: any) {
+                  alert(err.response?.data || '구글 로그인 처리 중 오류가 발생했습니다.');
+                }
               });
           }
         },
@@ -149,11 +156,35 @@ export default function Mypage() {
     window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_KEY}&redirect_uri=${encodeURIComponent(KAKAO_REDIRECT_URI)}&response_type=code`;
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoggedIn(true);
-    setIsLoginModalOpen(false);
-    alert('성공적으로 로그인되었습니다.');
+    try {
+      const response = await axios.post('http://localhost:8080/api/users/login', {
+        email: loginForm.id,
+        password: loginForm.password
+      });
+
+      const userData = response.data;
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      setUserInfo({
+        name: userData.name,
+        role: userData.role || '일반 사용자',
+        branch: userData.branch || '지점 정보 없음',
+        email: userData.email,
+        phone: userData.phone || '',
+      });
+      
+      setIsLoggedIn(true);
+      setIsLoginModalOpen(false);
+      alert('성공적으로 로그인되었습니다.');
+      window.location.reload();
+
+    } catch (error: any) {
+      console.error('로그인 실패:', error);
+      const errorMessage = error.response?.data || '아이디 또는 비밀번호가 일치하지 않습니다.';
+      alert(errorMessage);
+    }
   };
 
   const handleLogout = () => {
@@ -169,11 +200,50 @@ export default function Mypage() {
     alert('회원 정보가 수정되었습니다.');
   };
 
+  const formatPhoneNumber = (value: string) => {
+    const numbers = value.replace(/[^0-9]/g, '');
+    if (numbers.length <= 3) {
+      return numbers;
+    } else if (numbers.length <= 7) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    } else if (numbers.length <= 11) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+    } else {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+    }
+  };
+
+  const handleSignupChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    if (name === 'password') {
+      const filteredPassword = value.replace(/[^A-Za-z0-9~!@#$%^&*()_+|<>?:{}]/g, '');
+      setSignupForm({ ...signupForm, [name]: filteredPassword });
+    } else if (name === 'phone') {
+      const formattedPhone = formatPhoneNumber(value);
+      setSignupForm({ ...signupForm, [name]: formattedPhone });
+    } else {
+      setSignupForm({ ...signupForm, [name]: value });
+    }
+  };
+
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.post('http://localhost:8080/api/users/signup', signupForm);
-    alert('회원가입이 완료되었습니다.');
-    setIsSignupModalOpen(false);
+
+    const nameRegex = /^[가-힣]{3,}$/;
+    if (!nameRegex.test(signupForm.name)) {
+      alert('이름은 한글 3글자 이상이어야 합니다.');
+      return;
+    }
+
+    try {
+      await axios.post('http://localhost:8080/api/users/signup', signupForm);
+      alert('회원가입이 완료되었습니다.');
+      setIsSignupModalOpen(false);
+    } catch (error: any) {
+      console.error('회원가입 실패:', error);
+      alert(error.response?.data || '회원가입에 실패했습니다.');
+    }
   };
 
   return (
@@ -197,10 +267,7 @@ export default function Mypage() {
           </div>
 
           <div className="action-buttons-wrap">
-            <div className="signup-column">
-              {isLoggedIn && <span className="welcome-user-text">{userInfo.name}님</span>}
-              <button onClick={() => setIsSignupModalOpen(true)} className="signup-button">📝 회원가입</button>
-            </div>
+            <button onClick={() => setIsSignupModalOpen(true)} className="signup-button">📝 회원가입</button>
             {isLoggedIn ? (
               <button onClick={handleLogout} className="auth-button-logout">🚪 Log Out</button>
             ) : (
@@ -296,11 +363,47 @@ export default function Mypage() {
               <button onClick={() => setIsSignupModalOpen(false)} className="modal-close-btn">✕</button>
             </div>
             <form onSubmit={handleSignupSubmit} className="signup-form-layout">
-              <input type="text" placeholder="이름" value={signupForm.name} onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })} className="form-input" />
-              <input type="text" placeholder="소속 지점" value={signupForm.branch} onChange={(e) => setSignupForm({ ...signupForm, branch: e.target.value })} className="form-input" />
-              <input type="email" placeholder="이메일" value={signupForm.email} onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })} className="form-input" />
-              <input type="password" placeholder="비밀번호" value={signupForm.password} onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })} className="form-input" />
-              <input type="text" placeholder="연락처" value={signupForm.phone} onChange={(e) => setSignupForm({ ...signupForm, phone: e.target.value })} className="form-input" />
+              <input 
+                type="text" 
+                name="name"
+                placeholder="이름 (한글 3글자 이상)" 
+                value={signupForm.name} 
+                onChange={handleSignupChange} 
+                className="form-input" 
+              />
+              <input 
+                type="text" 
+                name="branch"
+                placeholder="소속 지점" 
+                value={signupForm.branch} 
+                onChange={handleSignupChange} 
+                className="form-input" 
+              />
+              <input 
+                type="email" 
+                name="email"
+                placeholder="이메일" 
+                value={signupForm.email} 
+                onChange={handleSignupChange} 
+                className="form-input" 
+              />
+              <input 
+                type="password" 
+                name="password"
+                placeholder="비밀번호 (영문, 숫자, 특수기호)" 
+                value={signupForm.password} 
+                onChange={handleSignupChange} 
+                className="form-input" 
+              />
+              <input 
+                type="text" 
+                name="phone"
+                placeholder="연락처 (자동 하이픈)" 
+                value={signupForm.phone} 
+                onChange={handleSignupChange} 
+                maxLength={13}
+                className="form-input" 
+              />
               <button type="submit" className="submit-button signup-submit-margin">가입 신청</button>
             </form>
           </div>
