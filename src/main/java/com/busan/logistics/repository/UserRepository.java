@@ -1,5 +1,6 @@
-package com.busan.logistics.user;
+package com.busan.logistics.repository;
 
+import com.busan.logistics.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
