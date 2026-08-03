@@ -8,9 +8,8 @@ group = 'com.busan'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+	sourceCompatibility = '21'
+	targetCompatibility = '21'
 }
 
 repositories {
@@ -34,3 +33,4 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
