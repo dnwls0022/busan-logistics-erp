@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8080', // 본인의 백엔드 서버 주소 및 포트
+        target: process.env.VITE_API_URL || 'https://busan-logistics-erp-production.up.railway.app',
         changeOrigin: true,
       }
     }
