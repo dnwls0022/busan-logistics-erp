@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../App.css';
 
-// ==========================================
-// 1. 데이터 구조 정의
-// ==========================================
 interface Store {
   id: number;
   name: string;
@@ -30,10 +27,7 @@ interface CartItem {
   maxAvailable: number;  
 }
 
-function App() {
-  // ==========================================
-  // 2. 상태(State) 관리
-  // ==========================================
+export default function DashboardPage() {
   const [inventories, setInventories] = useState<InventoryItem[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -42,16 +36,12 @@ function App() {
   const [userBudget, setUserBudget] = useState<number>(300000);
   const [cart, setCart] = useState<CartItem[]>([]); 
 
-  // [음악 기능 상태 추가]
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // ==========================================
-  // 3. 효과(Effect) 관리 (API 및 오디오)
-  // ==========================================
   useEffect(() => {
-    // API 연동
-    fetch('http://localhost:8080/api/inventories') 
+    // 💡
+    fetch('/api/inventories') 
       .then(response => {
         if (!response.ok) throw new Error('서버 연결 실패');
         return response.json();
@@ -59,7 +49,6 @@ function App() {
       .then(data => setInventories(data))
       .catch(error => console.error("❌ 백엔드 연결 실패:", error));
 
-    // 오디오 객체 초기화
     audioRef.current = new Audio('/작은 봄_고추잠자리.mp3');
     audioRef.current.loop = true;
   }, []);
@@ -74,9 +63,6 @@ function App() {
     setIsPlaying(!isPlaying);
   };
 
-  // ==========================================
-  // 4. 로직 관리
-  // ==========================================
   const totalCurrentInventory = inventories.reduce((sum, item) => sum + (item.quantity || 0), 0);
   const totalAvailableInventory = inventories.reduce((sum, item) => item.quantity > 0 ? sum + item.quantity : sum, 0);
 
@@ -118,7 +104,6 @@ function App() {
   };
 
   const totalCartPrice = cart.reduce((sum, c) => sum + (c.price * c.orderQuantity), 0);
-  const totalCartCount = cart.reduce((sum, c) => sum + c.orderQuantity, 0);
   const changeMoney = userBudget - totalCartPrice;
   const isOverBudget = changeMoney < 0; 
 
@@ -134,16 +119,12 @@ function App() {
   const currentItems = filteredInventories.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredInventories.length / itemsPerPage) || 1;
 
-  // ==========================================
-  // 5. UI 렌더링
-  // ==========================================
   return (
     <div className="cafe-container">
       <div className="cafe-header">
         <span>☕</span>
         <h1>CAFE LOGISTICS ERP</h1>
         
-        {/* 예쁘게 바뀐 음악 플레이어 UI */}
         <div className="music-player-zone">
           <div className="music-info">
             <h4>작은 봄</h4>
@@ -263,5 +244,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

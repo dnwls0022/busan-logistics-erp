@@ -15,12 +15,10 @@ export default function AdminPage() {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // 💡 관리자 권한 검증 로직
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
         const currentUser = JSON.parse(savedUser);
-        // ADMIN 권한이 아니면 접근 차단 및 마이페이지로 강제 이동
         if (!currentUser.role || currentUser.role.toUpperCase() !== 'ADMIN') {
           alert('관리자만 접근할 수 있는 페이지입니다.');
           window.location.href = '/mypage'; 
@@ -37,25 +35,22 @@ export default function AdminPage() {
       return;
     }
 
-    // 관리자가 맞을 경우에만 사용자 목록 불러오기 실행
     fetchUsersFromDB();
   }, []);
 
   const fetchUsersFromDB = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/api/users'); 
+      const response = await fetch('/api/users'); 
       
       if (!response.ok) {
         throw new Error('서버에서 사용자 데이터를 불러오지 못했습니다.');
       }
       
       const data: User[] = await response.json();
-
       const nonAdminUsers = data.filter(
         user => !user.role || user.role.toUpperCase() !== 'ADMIN'
       );
-
       setUsers(nonAdminUsers);
     } catch (error) {
       console.error('API 연동 오류:', error);
@@ -65,10 +60,9 @@ export default function AdminPage() {
     }
   };
 
-  // 🟢 가입 승인 처리 (DB 연동)
   const handleApprove = async (userId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/users/${userId}/status`, {
+      const response = await fetch(`/api/users/${userId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: '승인완료' })
@@ -88,11 +82,10 @@ export default function AdminPage() {
     }
   };
 
-  // 🟢 권한 해제 / 승인거절 처리 (DB 연동)
   const handleRevoke = async (userId: number) => {
     if (window.confirm('정말 해당 사용자의 권한을 해제(승인 거절)하시겠습니까?')) {
       try {
-        const response = await fetch(`http://localhost:8080/api/users/${userId}/status`, {
+        const response = await fetch(`/api/users/${userId}/status`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: '승인거절' })

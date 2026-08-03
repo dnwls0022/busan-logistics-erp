@@ -73,7 +73,7 @@ export default function Mypage() {
       const tokenPayload = parseJwt(response.credential);
       const socialData = { email: tokenPayload.email, name: tokenPayload.email, provider: 'google', phone: '' };
 
-      const res = await axios.post('http://localhost:8080/api/users/social-login', socialData);
+      const res = await axios.post('/api/users/social-login', socialData);
       setUserInfo(prev => ({ ...prev, name: res.data.email, email: res.data.email }));
       setIsLoggedIn(true);
       setIsLoginModalOpen(false);
@@ -86,7 +86,7 @@ export default function Mypage() {
 
   const handleNaverCallback = async (code: string) => {
     try {
-      const res = await axios.post('http://localhost:8080/api/users/naver-login', { code });
+      const res = await axios.post('/api/users/naver-login', { code });
       setUserInfo(prev => ({ ...prev, name: res.data.email, email: res.data.email }));
       setIsLoggedIn(true);
       alert(`환영합니다, ${res.data.email}님! 네이버 계정으로 로그인되었습니다.`);
@@ -99,7 +99,7 @@ export default function Mypage() {
 
   const handleKakaoCallback = async (code: string) => {
     try {
-      const res = await axios.post('http://localhost:8080/api/users/kakao-login', { code });
+      const res = await axios.post('/api/users/kakao-login', { code });
       setUserInfo(prev => ({ ...prev, name: res.data.email, email: res.data.email }));
       setIsLoggedIn(true);
       alert(`환영합니다, ${res.data.email}님! 카카오 계정으로 로그인되었습니다.`);
@@ -129,7 +129,7 @@ export default function Mypage() {
               .then(res => res.json())
               .then(async (data) => {
                 try {
-                  const res = await axios.post('http://localhost:8080/api/users/social-login', {
+                  const res = await axios.post('/api/users/social-login', {
                     email: data.email, name: data.email, provider: 'google', phone: ''
                   });
                   setUserInfo(prev => ({ ...prev, name: res.data.email, email: res.data.email }));
@@ -159,7 +159,7 @@ export default function Mypage() {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/users/login', {
+      const response = await axios.post('/api/users/login', {
         email: loginForm.id,
         password: loginForm.password
       });
@@ -237,7 +237,7 @@ export default function Mypage() {
     }
 
     try {
-      await axios.post('http://localhost:8080/api/users/signup', signupForm);
+      await axios.post('/api/users/signup', signupForm);
       alert('회원가입이 완료되었습니다.');
       setIsSignupModalOpen(false);
     } catch (error: any) {
