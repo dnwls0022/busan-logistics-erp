@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import DashboardPage from './page/DashboardPage';
 import MapPage from './page/MapPage';
