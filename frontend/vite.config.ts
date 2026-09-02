@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.VITE_API_URL || 'https://busan-logistics-erp-production.up.railway.app',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       }
     }
