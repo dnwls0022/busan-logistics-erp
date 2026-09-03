@@ -1,5 +1,5 @@
-# 1단계: 자바 및 Node.js 빌드 환경 (Debian 기반으로 호환성 확보)
-FROM eclipse-temurin:17-jdk AS build
+# 1단계: 자바 21 및 Node.js 빌드 환경 (Java 21 버전으로 변경)
+FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 
 # Node.js 및 npm 설치
@@ -9,8 +9,8 @@ COPY . .
 RUN chmod +x ./gradlew
 RUN ./gradlew clean build -x test
 
-# 2단계: 최종 실행 환경 (가벼운 Alpine 유지를 위해 JRE Alpine 사용)
-FROM eclipse-temurin:17-jre-alpine
+# 2단계: 최종 실행 환경 (Java 21 JRE Alpine 사용)
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 8080
