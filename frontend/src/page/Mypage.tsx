@@ -39,10 +39,10 @@ export default function Mypage() {
 
   const GOOGLE_CLIENT_ID = "246651152448-cb2g8rpnbqe0uqf31rsn41hro0i9s6uf.apps.googleusercontent.com";
   const NAVER_CLIENT_ID = "cB7Y4lkrJpznEMXohAYQ";
-  const NAVER_REDIRECT_URI = "http://localhost:5173/oauth/naver";
+  const NAVER_REDIRECT_URI = `${window.location.origin}/oauth/naver`;
 
   const KAKAO_CLIENT_KEY = "a117eeed609d18d0c44765b0a480d6aa";
-  const KAKAO_REDIRECT_URI = "http://localhost:5173/oauth/kakao";
+  const KAKAO_REDIRECT_URI = `${window.location.origin}/oauth/kakao`;
 
   useEffect(() => {
     if (window.google) {
