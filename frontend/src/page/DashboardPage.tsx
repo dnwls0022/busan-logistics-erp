@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // 💡
-    fetch('/api/inventories') 
+    fetch('/api/inventories?size=1000') 
       .then(response => {
         if (!response.ok) throw new Error('서버 연결 실패');
         return response.json();
