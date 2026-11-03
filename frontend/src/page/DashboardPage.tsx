@@ -1,4 +1,4 @@
-import  { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../App.css';
 
 interface Store {
@@ -35,12 +35,12 @@ export default function DashboardPage() {
 
   const [userBudget, setUserBudget] = useState<number>(300000);
   const [cart, setCart] = useState<CartItem[]>([]); 
+  const [orderStatus, setOrderStatus] = useState<'IDLE' | 'PENDING' | 'PREPARING' | 'SHIPPING'>('IDLE');
 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // 💡
     fetch('/api/inventories?size=1000') 
       .then(response => {
         if (!response.ok) throw new Error('서버 연결 실패');
@@ -65,6 +65,9 @@ export default function DashboardPage() {
 
   const totalCurrentInventory = inventories.reduce((sum, item) => sum + (item.quantity || 0), 0);
   const totalAvailableInventory = inventories.reduce((sum, item) => item.quantity > 0 ? sum + item.quantity : sum, 0);
+
+  // 안전재고 임계값(예: 60개 이하) 재고 부족 품목 건수 계산
+  const lowStockCount = inventories.filter(item => item.quantity > 0 && item.quantity <= 60).length;
 
   const addToCart = (item: InventoryItem) => {
     if (!item || item.quantity <= 0) return; 
@@ -103,6 +106,12 @@ export default function DashboardPage() {
     setCart(prevCart => prevCart.filter(c => c.inventoryId !== inventoryId));
   };
 
+  const handleOrder = () => {
+    if (cart.length === 0) return alert('발주할 항목을 담아주세요.');
+    setOrderStatus('PENDING');
+    alert('본사 물류센터로 발주가 신청되었습니다.');
+  };
+
   const totalCartPrice = cart.reduce((sum, c) => sum + (c.price * c.orderQuantity), 0);
   const changeMoney = userBudget - totalCartPrice;
   const isOverBudget = changeMoney < 0; 
@@ -121,6 +130,7 @@ export default function DashboardPage() {
 
   return (
     <div className="cafe-container">
+      {/* ☕ 상단 로고 및 음악 플레이어 영역 (기존 형태 완벽 보존) */}
       <div className="cafe-header">
         <span>☕</span>
         <h1>CAFE LOGISTICS ERP</h1>
@@ -137,6 +147,24 @@ export default function DashboardPage() {
 
         <p>부산 디저트카페 종합 관리 및 대시보드</p>
         <div className="cafe-title-line"></div>
+      </div>
+
+      {/* 🚨 상단 실시간 재고 부족 요약 티커 추가 */}
+      <div style={{
+        backgroundColor: '#FFF3CD',
+        border: '1px solid #FFEEBA',
+        color: '#856404',
+        padding: '12px 20px',
+        borderRadius: '8px',
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        fontWeight: 'bold',
+        fontSize: '14px'
+      }}>
+        <span>🚨 [긴급 물류 알림]</span>
+        <span>현재 전국 매장 중 재고 부족(안전재고 60개 이하) 품목이 총 <strong>{lowStockCount}건</strong> 있습니다. 즉시 발주를 검토하세요.</span>
       </div>
 
       <div className="dashboard-zone">
@@ -163,23 +191,44 @@ export default function DashboardPage() {
           </div>
 
           <div className="product-grid">
-            {currentItems.map((item) => (
-              <div key={item.id} className="product-card">
-                <div className="card-top-line"></div>
-                <div className="card-body">
-                  <span className="store-badge">📍 {item.store?.name}</span>
-                  <h3 className="product-title">{item.product?.name}</h3>
-                  <p className="product-price">{(item.product?.price || 0).toLocaleString()} 원</p>
-                  <div className={`quantity-box ${item.quantity === 0 ? 'sold-out' : ''}`}>
-                    <span>매장 보유고</span>
-                    <span className="quantity-value">{item.quantity === 0 ? '품절 ☕' : `${item.quantity} 개`}</span>
+            {currentItems.map((item) => {
+              const isLowStock = item.quantity > 0 && item.quantity <= 60;
+              return (
+                <div key={item.id} className="product-card" style={{ position: 'relative' }}>
+                  {/* 🚨 안전재고 임계값 경고 뱃지 */}
+                  {isLowStock && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '12px',
+                      right: '12px',
+                      backgroundColor: '#DC3545',
+                      color: '#FFF',
+                      fontSize: '11px',
+                      padding: '3px 8px',
+                      borderRadius: '12px',
+                      fontWeight: 'bold',
+                      zIndex: 2
+                    }}>
+                      긴급 발주 필요
+                    </span>
+                  )}
+
+                  <div className="card-top-line"></div>
+                  <div className="card-body">
+                    <span className="store-badge">📍 {item.store?.name}</span>
+                    <h3 className="product-title">{item.product?.name}</h3>
+                    <p className="product-price">{(item.product?.price || 0).toLocaleString()} 원</p>
+                    <div className={`quantity-box ${item.quantity === 0 ? 'sold-out' : ''}`}>
+                      <span>매장 보유고</span>
+                      <span className="quantity-value">{item.quantity === 0 ? '품절 ☕' : `${item.quantity} 개`}</span>
+                    </div>
                   </div>
+                  <button className="btn-select" onClick={() => addToCart(item)} disabled={item.quantity === 0}>
+                    {item.quantity === 0 ? '선택 불가' : '주문서에 담기 🛒'}
+                  </button>
                 </div>
-                <button className="btn-select" onClick={() => addToCart(item)} disabled={item.quantity === 0}>
-                  {item.quantity === 0 ? '선택 불가' : '주문서에 담기 🛒'}
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="pagination-zone">
@@ -206,6 +255,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* 우측 사이드바: 빌, 예산, 파이프라인 및 배송 경로 연동 */}
         <div className="right-sidebar">
           <div className="receipt-title">📋 CAFE INTEGRATED BILL</div>
           <div className="budget-section-wrap">
@@ -238,6 +288,52 @@ export default function DashboardPage() {
               <span>{isOverBudget ? '💸 예산 초과' : '🪙 예산 잔액'}</span>
               <span style={{ color: isOverBudget ? '#d32f2f' : '#2e7d32' }}>{Math.abs(changeMoney).toLocaleString()} 원</span>
             </div>
+
+            {/* 본사 발주 신청 버튼 */}
+            <button 
+              className="btn-select" 
+              style={{ width: '100%', marginTop: '12px', backgroundColor: '#4A3B32', color: '#FFF' }}
+              onClick={handleOrder}
+            >
+              본사 발주 신청하기 🚀
+            </button>
+
+            {/* 발주 상태 파이프라인 */}
+            {orderStatus !== 'IDLE' && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: '12px',
+                padding: '8px',
+                backgroundColor: '#F8F9FA',
+                borderRadius: '8px',
+                fontSize: '11px',
+                textAlign: 'center'
+              }}>
+                <div style={{ flex: 1, padding: '4px', borderRadius: '4px', backgroundColor: orderStatus === 'PENDING' ? '#4A3B32' : 'transparent', color: orderStatus === 'PENDING' ? '#FFF' : '#333', fontWeight: 'bold' }}>결재 대기</div>
+                <div style={{ flex: 1, padding: '4px', borderRadius: '4px', backgroundColor: orderStatus === 'PREPARING' ? '#4A3B32' : 'transparent', color: orderStatus === 'PREPARING' ? '#FFF' : '#333', fontWeight: 'bold' }}>출고 준비</div>
+                <div style={{ flex: 1, padding: '4px', borderRadius: '4px', backgroundColor: orderStatus === 'SHIPPING' ? '#4A3B32' : 'transparent', color: orderStatus === 'SHIPPING' ? '#FFF' : '#333', fontWeight: 'bold' }}>배송 중</div>
+              </div>
+            )}
+
+            {/* 실시간 배송 경로 지도 퀵 버튼 */}
+            <button 
+              style={{
+                width: '100%',
+                backgroundColor: '#6C757D',
+                color: '#FFF',
+                border: 'none',
+                padding: '10px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                marginTop: '10px',
+                fontSize: '12px',
+                fontWeight: 'bold'
+              }}
+              onClick={() => alert('지점 지도 관제 페이지로 이동합니다.')}
+            >
+              🗺️ 실시간 배송 경로 지도 보기
+            </button>
           </div>
         </div>
       </div>

@@ -1,517 +1,593 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { 
+  Pin, 
+  Paperclip, 
+  ThumbsUp, 
+  MessageSquare, 
+  Trash2, 
+  CornerDownRight, 
+  Search, 
+  X,
+  FileText
+} from 'lucide-react';
 import './CommunityPage.css';
 
-interface Post {
+export type ProcessStatus = '접수중' | '처리중' | '조치완료';
+export type Category = '전체' | '원두/재고' | '물류/아이디어' | '공지사항' | '자유소통';
+
+export interface FileItem {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url?: string;
+}
+
+export interface Comment {
   id: number;
-  title: string;
   author: string;
   branch: string;
-  date: string;
-  views: number;
   content: string;
-  category: string;
+  createdAt: string;
   likes: number;
-  viewedUsers?: string[]; // 💡 계정별 조회 중복 방지를 위한 조회 기록 배열
+  parentId?: number | null;
 }
 
-interface Comment {
+export interface Post {
   id: number;
-  author: string;
+  category: Category;
+  title: string;
   content: string;
-  date: string;
+  author: string;
+  branch: string;
+  createdAt: string;
+  views: number;
+  likes: number;
+  isPinned: boolean;
+  status?: ProcessStatus;
+  attachments: FileItem[];
+  comments: Comment[];
 }
 
-// 초기 기본 게시글 데이터
+export interface User {
+  id: string;
+  name: string;
+  branch: string;
+  role: 'USER' | 'ADMIN';
+}
+
+const currentUser: User = {
+  id: 'user123',
+  name: '조우진',
+  branch: '부산 서면점',
+  role: 'ADMIN'
+};
+
 const initialPosts: Post[] = [
-  { 
-    id: 7, 
-    title: '[필독] 2026년 하반기 전 지점 위생 및 세스코 방역 점검 안내', 
-    author: '관리자', 
-    branch: '본사 운영팀', 
-    date: '2026-06-15', 
-    views: 84, 
-    content: '하반기 전 지점 위생 점검 일정을 공지합니다. 첨부된 매뉴얼을 참고하시어 사전 점검에 만전을 기해 주시기 바랍니다.', 
-    category: '공지사항', 
-    likes: 12,
-    viewedUsers: []
+  {
+    id: 9,
+    category: '원두/재고',
+    title: '232',
+    content: '테스트 내용입니다.',
+    author: '32',
+    branch: '232',
+    createdAt: '2026-08-01',
+    views: 3,
+    likes: 0,
+    isPinned: false,
+    attachments: [],
+    comments: []
   },
-  { 
-    id: 6, 
-    title: '[보안] ERP 시스템 계정 관리 및 개인정보 보호 수칙 준수', 
-    author: '관리자', 
-    branch: '본사 시스템팀', 
-    date: '2026-06-12', 
-    views: 112, 
-    content: '최근 보안 사고 예방을 위해 모든 임직원께서는 주기적인 비밀번호 변경 및 공용 PC 로그아웃을 철저히 생활해 주시기 바랍니다.', 
-    category: '공지사항', 
-    likes: 19,
-    viewedUsers: []
+  {
+    id: 7,
+    category: '공지사항',
+    title: '[필독] 2026년 하반기 전 지점 위생 및 세스코 방역 점검 안내',
+    content: '전 지점 위생 점검 일정 공유드립니다. 각 지점에서는 미리 준비해주세요.',
+    author: '관리자',
+    branch: '본사 운영팀',
+    createdAt: '2026-06-15',
+    views: 85,
+    likes: 14,
+    isPinned: true,
+    attachments: [],
+    comments: []
   },
-  { 
-    id: 5, 
-    title: '6월 두 번째 주 스페셜 원두 납품 일정 변경 안내', 
-    author: '박물류', 
-    branch: '본사 물류팀', 
-    date: '2026-06-10', 
-    views: 95, 
-    content: '지방선거 공휴일 물류 센터 휴무로 인해 이번 주 원두 배송이 기존보다 하루씩 지연될 예정이오니 영업에 차질 없으시길 바랍니다.', 
-    category: '원두/재고', 
-    likes: 8,
-    viewedUsers: []
-  },
-  { 
-    id: 4, 
-    title: '여름 시즌 신메뉴 "콜드브루 하와이안 라떼" 레시피 공유', 
-    author: '이개발', 
-    branch: '본사 R&D팀', 
-    date: '2026-06-08', 
-    views: 176, 
-    content: '다음 달 출시되는 여름 시즌 신메뉴 레시피 매뉴얼과 파우더 계량 가이드를 등록합니다. 각 지점에서는 미리 숙지해 주세요.', 
-    category: '물류/아이디어', 
-    likes: 31,
-    viewedUsers: []
-  },
-  { id: 3, title: '부산 서면점 원두 재고 부족 관련 공유합니다.', author: '김지점', branch: '부산 서면점', date: '2026-06-07', views: 42, content: '이번 주말 주문량이 급증하여 서면점 아메리카노 원두 재고가 빠듯합니다. 인근 지점 여유분 공유 부탁드려요!', category: '원두/재고', likes: 5, viewedUsers: [] },
-  { id: 2, title: '물류 배송 차량 경로 최적화 아이디어 제안', author: '박물류', branch: '본사 물류팀', date: '2026-06-05', views: 128, content: '해운대구와 수영구 통합 배송 노선을 조정하면 유류비를 약 15% 아낄 수 있을 것 같습니다. 상세 파일 첨부합니다.', category: '물류/아이디어', likes: 14, viewedUsers: [] },
-  { id: 1, title: 'CAFE LOGISTICS ERP 시스템 오픈을 축하드립니다!', author: '관리자', branch: '본사 시스템팀', date: '2026-06-01', views: 256, content: '드디어 26개 지점 통합 재고 관리 및 대시보드가 오픈되었습니다. 원활한 소통을 위해 본 게시판을 적극 활용해 주세요.', category: '공지사항', likes: 23, viewedUsers: [] },
+  {
+    id: 3,
+    category: '원두/재고',
+    title: '부산 서면점 원두 재고 부족 관련 공유합니다.',
+    content: '주말 물량 증가로 인해 다크 로스트 원두 재고가 부족합니다.',
+    author: '김지점',
+    branch: '부산 서면점',
+    createdAt: '2026-06-07',
+    views: 42,
+    likes: 5,
+    isPinned: false,
+    status: '처리중',
+    attachments: [],
+    comments: []
+  }
 ];
 
-export default function CommunityPage() {
-  // 💡 현재 로그인한 사용자 계정 (실제 프로젝트 환경에 맞춰 변경 가능, 테스트용 기본값 '관리자')
-  const [currentUser] = useState<string>(() => {
-    return localStorage.getItem('erp_current_user') || '관리자';
-  });
+export const CommunityBoard: React.FC = () => {
+  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [activeCategory, setActiveCategory] = useState<Category>('전체');
+  const [searchTarget, setSearchTarget] = useState<'all' | 'title' | 'author' | 'branch'>('all');
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  
+  const [viewMode, setViewMode] = useState<'list' | 'detail' | 'write'>('list');
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
 
-  // 💡 브라우저 localStorage에서 데이터를 불러오거나 없으면 기본값 사용[cite: 3]
-  const [posts, setPosts] = useState<Post[]>(() => {
-    const savedPosts = localStorage.getItem('erp_community_posts');
-    if (savedPosts) {
-      try {
-        return JSON.parse(savedPosts);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return initialPosts;
-  });
+  const [newCategory, setNewCategory] = useState<Category>('원두/재고');
+  const [newTitle, setNewTitle] = useState<string>('');
+  const [newContent, setNewContent] = useState<string>('');
+  const [newIsPinned, setNewIsPinned] = useState<boolean>(false);
+  const [newStatus, setNewStatus] = useState<ProcessStatus>('접수중');
+  const [attachedFiles, setAttachedFiles] = useState<FileItem[]>([]);
 
-  // posts가 변경될 때마다 localStorage에 자동 저장[cite: 3]
-  useEffect(() => {
-    localStorage.setItem('erp_community_posts', JSON.stringify(posts));
-  }, [posts]);
+  const [commentInput, setCommentInput] = useState<string>('');
+  const [replyTargetId, setReplyTargetId] = useState<number | null>(null);
 
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-
-  // ✍️ 글 작성 상태
-  const [isWriting, setIsWriting] = useState<boolean>(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newAuthor, setNewAuthor] = useState('');
-  const [newBranch, setNewBranch] = useState('');
-  const [newCategory, setNewCategory] = useState('원두/재고');
-  const [newContent, setNewContent] = useState('');
-
-  // 🔍 검색 및 필터 상태
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('전체');
-
-  // 💬 댓글 목록 상태
-  const [commentsMap, setCommentsMap] = useState<{ [postId: number]: Comment[] }>({
-    2: [
-      { id: 1, author: '조우진', content: '좋은 아이디어네요 적극 찬성합니다!', date: '2026-06-06' }
-    ]
-  });
-
-  const [commentInput, setCommentInput] = useState('');
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editText, setEditText] = useState('');
-
-  // 🖱️ 게시글 클릭 시 조회수 중복 방지 및 증가 처리 핸들러
-  const handleSelectPost = (post: Post) => {
-    const viewedList = post.viewedUsers || [];
-    
-    let updatedPosts = posts;
-    // 현재 로그인한 계정이 이 글을 아직 본 적이 없다면 조회수 증가 및 기록
-    if (!viewedList.includes(currentUser)) {
-      updatedPosts = posts.map(p => {
-        if (p.id === post.id) {
-          return {
-            ...p,
-            views: p.views + 1,
-            viewedUsers: [...(p.viewedUsers || []), currentUser]
-          };
-        }
-        return p;
-      });
-      setPosts(updatedPosts);
-    }
-
-    const clickedPost = updatedPosts.find(p => p.id === post.id);
-    setSelectedPost(clickedPost || post);
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const filesArray = Array.from(e.target.files);
+    const newFiles: FileItem[] = filesArray.map((file, idx) => ({
+      id: `${Date.now()}-${idx}`,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      url: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
+    }));
+    setAttachedFiles(prev => [...prev, ...newFiles]);
   };
 
-  // ✏️ 게시글 등록 핸들러
+  const handleRemoveFile = (fileId: string) => {
+    setAttachedFiles(prev => prev.filter(f => f.id !== fileId));
+  };
+
   const handleCreatePost = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle || !newAuthor || !newContent) {
-      alert('제목, 작성자, 내용은 필수 입력 항목입니다!');
-      return;
-    }
+    if (!newTitle.trim() || !newContent.trim()) return;
 
-    const newPostItem: Post = {
-      id: posts.length > 0 ? Math.max(...posts.map(p => p.id)) + 1 : 1,
-      title: newTitle,
-      author: newAuthor,
-      branch: newBranch || '본사',
-      date: new Date().toISOString().split('T')[0],
-      views: 0, // 처음 등록 시 조회수 0부터 시작
-      content: newContent,
+    const newPost: Post = {
+      id: Date.now(),
       category: newCategory,
+      title: newTitle,
+      content: newContent,
+      author: currentUser.name,
+      branch: currentUser.branch,
+      createdAt: new Date().toISOString().split('T')[0],
+      views: 0,
       likes: 0,
-      viewedUsers: [],
+      isPinned: currentUser.role === 'ADMIN' ? newIsPinned : false,
+      status: newCategory === '원두/재고' ? newStatus : undefined,
+      attachments: attachedFiles,
+      comments: []
     };
 
-    setPosts([newPostItem, ...posts]);
-    setIsWriting(false);
+    setPosts([newPost, ...posts]);
     setNewTitle('');
-    setNewAuthor('');
-    setNewBranch('');
     setNewContent('');
-    setNewCategory('원두/재고');
+    setAttachedFiles([]);
+    setNewIsPinned(false);
+    setViewMode('list');
   };
 
-  // 🗑️ 게시글 삭제 핸들러
   const handleDeletePost = (postId: number) => {
-    if (window.confirm('정말 이 게시글을 삭제하시겠습니까?')) {
+    if (window.confirm('정말 삭제하시겠습니까?')) {
       setPosts(posts.filter(p => p.id !== postId));
-      setSelectedPost(null);
+      setViewMode('list');
+      setSelectedPostId(null);
     }
   };
 
-  // 👍 좋아요(도움돼요) 증가 핸들러
-  const handleLike = (postId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setPosts(posts.map(p => {
-      if (p.id === postId) {
-        return { ...p, likes: p.likes + 1 };
-      }
-      return p;
-    }));
-    if (selectedPost && selectedPost.id === postId) {
-      setSelectedPost({ ...selectedPost, likes: selectedPost.likes + 1 });
-    }
+  const handleStatusChange = (postId: number, newStatus: ProcessStatus) => {
+    setPosts(posts.map(post => post.id === postId ? { ...post, status: newStatus } : post));
   };
 
-  // 💬 댓글 추가 핸들러
-  const handleAddComment = () => {
-    if (!commentInput.trim()) {
-      alert('댓글 내용을 입력해주세요!');
-      return;
-    }
-    if (!selectedPost) return;
+  const handleLikePost = (postId: number) => {
+    setPosts(posts.map(post => post.id === postId ? { ...post, likes: post.likes + 1 } : post));
+  };
 
-    const currentComments = commentsMap[selectedPost.id] || [];
+  const handleAddComment = (postId: number) => {
+    if (!commentInput.trim()) return;
+
     const newComment: Comment = {
       id: Date.now(),
-      author: currentUser, // 현재 로그인한 계정명 반영
+      author: currentUser.name,
+      branch: currentUser.branch,
       content: commentInput,
-      date: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString().split('T')[0],
+      likes: 0,
+      parentId: replyTargetId
     };
 
-    setCommentsMap({
-      ...commentsMap,
-      [selectedPost.id]: [...currentComments, newComment]
-    });
-    setCommentInput('');
-  };
-
-  // 🗑️ 댓글 삭제 핸들러
-  const handleDeleteComment = (commentId: number) => {
-    if (!selectedPost) return;
-    if (window.confirm('정말 이 댓글을 삭제하시겠습니까?')) {
-      const currentComments = commentsMap[selectedPost.id] || [];
-      const updatedComments = currentComments.filter(c => c.id !== commentId);
-      setCommentsMap({
-        ...commentsMap,
-        [selectedPost.id]: updatedComments
-      });
-    }
-  };
-
-  const handleStartEdit = (comment: Comment) => {
-    setEditingCommentId(comment.id);
-    setEditText(comment.content);
-  };
-
-  const handleSaveEdit = (commentId: number) => {
-    if (!editText.trim()) {
-      alert('수정할 내용을 입력해주세요!');
-      return;
-    }
-    if (!selectedPost) return;
-
-    const currentComments = commentsMap[selectedPost.id] || [];
-    const updatedComments = currentComments.map(c => {
-      if (c.id === commentId) {
-        return { ...c, content: editText };
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        return { ...post, comments: [...post.comments, newComment] };
       }
-      return c;
-    });
+      return post;
+    }));
 
-    setCommentsMap({
-      ...commentsMap,
-      [selectedPost.id]: updatedComments
-    });
-    setEditingCommentId(null);
-    setEditText('');
+    setCommentInput('');
+    setReplyTargetId(null);
   };
 
-  // 🔍 카테고리 및 검색어에 따른 필터링 로직
   const filteredPosts = posts.filter(post => {
-    const matchesCategory = selectedCategory === '전체' || post.category === selectedCategory;
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          post.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          post.branch.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = activeCategory === '전체' || post.category === activeCategory;
+    
+    let matchesSearch = true;
+    if (searchKeyword.trim() !== '') {
+      const kw = searchKeyword.toLowerCase();
+      if (searchTarget === 'title') matchesSearch = post.title.toLowerCase().includes(kw);
+      else if (searchTarget === 'author') matchesSearch = post.author.toLowerCase().includes(kw);
+      else if (searchTarget === 'branch') matchesSearch = post.branch.toLowerCase().includes(kw);
+      else matchesSearch = post.title.toLowerCase().includes(kw) || post.content.toLowerCase().includes(kw) || post.author.toLowerCase().includes(kw);
+    }
+
     return matchesCategory && matchesSearch;
+  }).sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return b.id - a.id;
   });
 
-  const currentComments = selectedPost ? (commentsMap[selectedPost.id] || []) : [];
+  const selectedPost = posts.find(p => p.id === selectedPostId);
 
   return (
     <div className="community-container">
-      
-      <div className="community-header">
-        <h2 className="community-title">
-          💬 지점 소통 커뮤니티
-        </h2>
-        <p className="community-subtitle">전국 26개 지점 임직원분들이 실시간으로 소통하고 정보를 공유하는 공간입니다.</p>
-      </div>
+      <header className="community-header">
+        <h1>💬 지점 소통 커뮤니티</h1>
+        <p>전국 26개 지점 임직원분들이 실시간으로 소통하고 정보를 공유하는 공간입니다.</p>
+      </header>
 
-      {isWriting ? (
-        <div className="card-box">
-          <h3 className="form-title">✍️ 새 게시글 작성</h3>
-          <form onSubmit={handleCreatePost} className="write-form">
-            <div className="form-row">
-              <select 
-                value={newCategory} 
-                onChange={(e) => setNewCategory(e.target.value)} 
-                className="common-input"
-                style={{ width: '150px' }}
-              >
-                <option value="원두/재고">원두/재고</option>
-                <option value="물류/아이디어">물류/아이디어</option>
-                <option value="공지사항">공지사항</option>
-                <option value="자유소통">자유소통</option>
-              </select>
-              <input 
-                type="text" 
-                placeholder="글 제목을 입력하세요" 
-                value={newTitle} 
-                onChange={(e) => setNewTitle(e.target.value)}
-                className="common-input flex-1"
-              />
-            </div>
-            <div className="form-row">
-              <input 
-                type="text" 
-                placeholder="작성자 이름" 
-                value={newAuthor} 
-                onChange={(e) => setNewAuthor(e.target.value)}
-                className="common-input flex-1"
-              />
-              <input 
-                type="text" 
-                placeholder="소속 지점 (예: 부산 서면점)" 
-                value={newBranch} 
-                onChange={(e) => setNewBranch(e.target.value)}
-                className="common-input flex-1"
-              />
-            </div>
-            <textarea 
-              placeholder="내용을 입력하세요..." 
-              rows={8} 
-              value={newContent} 
-              onChange={(e) => setNewContent(e.target.value)}
-              className="common-input textarea"
-            />
-            <div className="form-btn-group">
-              <button type="button" onClick={() => setIsWriting(false)} className="cancel-btn">취소</button>
-              <button type="submit" className="submit-btn">등록하기</button>
-            </div>
-          </form>
-        </div>
-      ) : selectedPost ? (
-        <div className="card-box">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-            <button onClick={() => setSelectedPost(null)} className="back-btn" style={{ margin: 0 }}>← 목록으로 돌아가기</button>
-            <button 
-              onClick={() => handleDeletePost(selectedPost.id)} 
-              style={{ background: '#ffebee', color: '#c62828', border: '1px solid #ef9a9a', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              🗑️ 글 삭제하기
-            </button>
-          </div>
-
-          <div className="detail-header">
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-              <span className="branch-badge">[{selectedPost.category}]</span>
-              <span className="branch-badge">{selectedPost.branch}</span>
-            </div>
-            <h2 className="detail-title">{selectedPost.title}</h2>
-            <div className="detail-meta">
-              <span>작성자: <strong>{selectedPost.author}</strong></span>
-              <span>등록일: {selectedPost.date} | 조회수: {selectedPost.views} | 👍 도움돼요: {selectedPost.likes}</span>
-            </div>
-          </div>
-          <div className="detail-content">
-            {selectedPost.content}
-          </div>
-
-          {/* 상세 보기 하단 좋아요 버튼 */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '30px' }}>
-            <button 
-              onClick={(e) => handleLike(selectedPost.id, e)}
-              style={{ background: '#f5efe6', border: '1px solid #d7ccc8', padding: '10px 24px', borderRadius: '20px', fontWeight: 'bold', color: '#5d4037', cursor: 'pointer', fontSize: '15px' }}
-            >
-              👍 도움돼요! ({selectedPost.likes})
-            </button>
-          </div>
-
-          <div className="comment-section">
-            <h4 className="comment-title">💬 댓글 ({currentComments.length})</h4>
-            
-            <div className="comment-form">
-              <input 
-                type="text" 
-                placeholder="댓글을 입력하세요..." 
-                className="common-input flex-1 bg-white" 
-                value={commentInput}
-                onChange={(e) => setCommentInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleAddComment(); }}
-              />
-              <button className="submit-btn comment-submit" onClick={handleAddComment}>등록</button>
-            </div>
-
-            <div className="comment-list" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {currentComments.length === 0 ? (
-                <p style={{ color: '#888', fontSize: '14px', textAlign: 'center', padding: '10px 0' }}>아직 등록된 댓글이 없습니다. 첫 댓글을 남겨보세요!</p>
-              ) : (
-                currentComments.map((comment) => (
-                  <div key={comment.id} style={{ background: '#f9f6f0', padding: '12px 16px', borderRadius: '8px', border: '1px solid #eae3d2' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <strong style={{ fontSize: '14px', color: '#333' }}>{comment.author}</strong>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <span style={{ fontSize: '12px', color: '#888' }}>{comment.date}</span>
-                        {editingCommentId !== comment.id && (
-                          <>
-                            <button onClick={() => handleStartEdit(comment)} style={{ background: 'none', border: 'none', color: '#6b4f3f', fontSize: '12px', cursor: 'pointer', padding: 0 }}>수정</button>
-                            <button onClick={() => handleDeleteComment(comment.id)} style={{ background: 'none', border: 'none', color: '#d9534f', fontSize: '12px', cursor: 'pointer', padding: 0 }}>삭제</button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {editingCommentId === comment.id ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-                        <textarea value={editText} onChange={(e) => setEditText(e.target.value)} rows={2} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '14px' }} />
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                          <button onClick={() => setEditingCommentId(null)} style={{ padding: '4px 10px', background: '#ccc', border: 'none', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>취소</button>
-                          <button onClick={() => handleSaveEdit(comment.id)} style={{ padding: '4px 10px', background: '#6b4f3f', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>수정완료</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <p style={{ fontSize: '14px', color: '#555', margin: 0, whiteSpace: 'pre-wrap' }}>{comment.content}</p>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-
-          </div>
-        </div>
-      ) : (
-        <div>
-          {/* 🔍 상단 필터 및 검색 바 영역 */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {['전체', '원두/재고', '물류/아이디어', '공지사항', '자유소통'].map((cat) => (
+      {viewMode === 'list' && (
+        <main>
+          <div className="community-toolbar">
+            <div className="category-group">
+              {(['전체', '원두/재고', '물류/아이디어', '공지사항', '자유소통'] as Category[]).map(cat => (
                 <button
                   key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '20px',
-                    border: '1px solid #d7ccc8',
-                    background: selectedCategory === cat ? '#5d4037' : '#fffdf9',
-                    color: selectedCategory === cat ? '#fff' : '#5d4037',
-                    fontSize: '13px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    transition: '0.2s'
-                  }}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`category-btn ${activeCategory === cat ? 'active' : ''}`}
                 >
                   {cat}
                 </button>
               ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <input 
-                type="text"
-                placeholder="검색어 입력..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ padding: '7px 12px', borderRadius: '6px', border: '1px solid #d7ccc8', fontSize: '13px', outline: 'none', width: '180px' }}
-              />
-              <button onClick={() => setIsWriting(true)} className="submit-btn">✏️ 글쓰기</button>
+            <div className="search-write-group">
+              <select 
+                value={searchTarget} 
+                onChange={e => setSearchTarget(e.target.value as any)}
+                className="search-select"
+              >
+                <option value="all">전체검색</option>
+                <option value="title">제목+내용</option>
+                <option value="author">작성자</option>
+                <option value="branch">지점명</option>
+              </select>
+              
+              <div className="search-input-wrap">
+                <input
+                  type="text"
+                  placeholder="검색어 입력..."
+                  value={searchKeyword}
+                  onChange={e => setSearchKeyword(e.target.value)}
+                  className="search-input"
+                />
+                <Search size={16} className="search-icon" />
+              </div>
+
+              <button
+                onClick={() => setViewMode('write')}
+                className="write-btn"
+              >
+                ✏️ 글쓰기
+              </button>
             </div>
           </div>
 
-          <div className="list-top-bar">
-            <span className="list-count-text">검색된 이야기: <strong>{filteredPosts.length}</strong>개</span>
+          <div className="search-count-bar">
+            검색된 이야기: <strong>{filteredPosts.length}개</strong>
           </div>
 
-          <div className="table-wrap" style={{ maxHeight: '620px', overflowY: 'auto' }}>
+          <div className="table-wrapper">
             <table className="community-table">
               <thead>
                 <tr>
-                  <th className="td-center td-id">번호</th>
-                  <th className="td-center td-branch">분류 / 지점</th>
-                  <th>제목</th>
-                  <th className="td-center td-author">작성자</th>
-                  <th className="td-center td-date">날짜</th>
-                  <th className="td-center td-views">조회</th>
-                  <th className="td-center" style={{ width: '70px' }}>좋아요</th>
+                  <th className="col-num">번호</th>
+                  <th className="col-category">분류 / 지점</th>
+                  <th className="col-title">제목</th>
+                  <th className="col-author">작성자</th>
+                  <th className="col-date">날짜</th>
+                  <th className="col-views">조회</th>
+                  <th className="col-likes">좋아요</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredPosts.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '30px', color: '#888' }}>검색 결과가 없습니다.</td>
+                {filteredPosts.map((post) => (
+                  <tr 
+                    key={post.id}
+                    onClick={() => {
+                      setSelectedPostId(post.id);
+                      setPosts(posts.map(p => p.id === post.id ? { ...p, views: p.views + 1 } : p));
+                      setViewMode('detail');
+                    }}
+                    className={`post-row ${post.isPinned ? 'pinned-row' : ''}`}
+                  >
+                    <td className="col-num">
+                      {post.isPinned ? <Pin size={16} className="pin-icon" /> : post.id}
+                    </td>
+                    {/* 가로 정렬되어 깔끔하게 나오는 분류/지점 영역 */}
+                    <td className="col-category">
+                      <div className="tag-group">
+                        <span className="badge-category">{post.category}</span>
+                        <span className="badge-branch">{post.branch}</span>
+                      </div>
+                    </td>
+                    <td className="col-title">
+                      <div className="title-flex">
+                        {post.status && (
+                          <span className={`status-badge ${post.status}`}>
+                            [{post.status}]
+                          </span>
+                        )}
+                        <span className={`title-text ${post.isPinned ? 'pinned-title' : ''}`}>
+                          {post.title}
+                        </span>
+                        {post.attachments.length > 0 && <Paperclip size={14} className="file-icon" />}
+                        {post.comments.length > 0 && (
+                          <span className="comment-count">[{post.comments.length}]</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="col-author">{post.author}</td>
+                    <td className="col-date">{post.createdAt}</td>
+                    <td className="col-views">{post.views}</td>
+                    <td className="col-likes">👍 {post.likes}</td>
                   </tr>
-                ) : (
-                  filteredPosts.map((post) => (
-                    <tr key={post.id} onClick={() => handleSelectPost(post)}>
-                      <td className="td-center td-id">{post.id}</td>
-                      <td className="td-center td-branch" style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
-                        <span className="branch-badge small" style={{ background: '#e0d8d0' }}>{post.category}</span>
-                        <span className="branch-badge small">{post.branch}</span>
-                      </td>
-                      <td className="td-post-title">{post.title}</td>
-                      <td className="td-center td-author">{post.author}</td>
-                      <td className="td-center td-date">{post.date}</td>
-                      <td className="td-center td-views">{post.views}</td>
-                      <td className="td-center" style={{ color: '#5d4037', fontWeight: 'bold' }}>
-                        👍 {post.likes}
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </main>
+      )}
+
+      {viewMode === 'detail' && selectedPost && (
+        <main className="detail-card">
+          <div className="detail-top-bar">
+            <button 
+              onClick={() => setViewMode('list')}
+              className="back-btn"
+            >
+              ← 목록으로 돌아가기
+            </button>
+
+            {(selectedPost.author === currentUser.name || currentUser.role === 'ADMIN') && (
+              <button 
+                onClick={() => handleDeletePost(selectedPost.id)}
+                className="delete-btn"
+              >
+                <Trash2 size={14} /> 글 삭제하기
+              </button>
+            )}
+          </div>
+
+          <div className="detail-header-meta">
+            <div className="badge-group">
+              <span className="badge-category">{selectedPost.category}</span>
+              <span className="badge-branch">{selectedPost.branch}</span>
+              {selectedPost.status && (
+                <select 
+                  value={selectedPost.status}
+                  onChange={e => handleStatusChange(selectedPost.id, e.target.value as ProcessStatus)}
+                  className="status-select"
+                >
+                  <option value="접수중">접수중</option>
+                  <option value="처리중">처리중</option>
+                  <option value="조치완료">조치완료</option>
+                </select>
+              )}
+            </div>
+
+            <h2 className="detail-title">{selectedPost.title}</h2>
+            <div className="detail-info-bar">
+              <div>작성자: <strong>{selectedPost.author}</strong> ({selectedPost.branch})</div>
+              <div>등록일: {selectedPost.createdAt} | 조회수: {selectedPost.views}</div>
+            </div>
+          </div>
+
+          <div className="detail-content">
+            {selectedPost.content}
+          </div>
+
+          {selectedPost.attachments.length > 0 && (
+            <div className="attachment-box">
+              <h4><Paperclip size={14} /> 첨부파일 ({selectedPost.attachments.length})</h4>
+              <div className="attachment-list">
+                {selectedPost.attachments.map(file => (
+                  <div key={file.id} className="attachment-item">
+                    <FileText size={14} />
+                    <span>{file.name}</span>
+                    <span className="file-size">({Math.round(file.size / 1024)} KB)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="like-section">
+            <button
+              onClick={() => handleLikePost(selectedPost.id)}
+              className="like-action-btn"
+            >
+              <ThumbsUp size={16} /> 도움이 돼요! ({selectedPost.likes})
+            </button>
+          </div>
+
+          <section className="comment-section">
+            <h3><MessageSquare size={16} /> 댓글 ({selectedPost.comments.length})</h3>
+
+            <div className="comment-list">
+              {selectedPost.comments.filter(c => !c.parentId).map(comment => (
+                <div key={comment.id} className="comment-item-box">
+                  <div className="comment-meta">
+                    <strong>{comment.author} ({comment.branch})</strong>
+                    <span className="comment-date">{comment.createdAt}</span>
+                  </div>
+                  <p className="comment-text">{comment.content}</p>
+                  
+                  <button
+                    onClick={() => setReplyTargetId(replyTargetId === comment.id ? null : comment.id)}
+                    className="reply-toggle-btn"
+                  >
+                    답글 달기
+                  </button>
+
+                  {selectedPost.comments.filter(reply => reply.parentId === comment.id).map(reply => (
+                    <div key={reply.id} className="reply-item-box">
+                      <CornerDownRight size={14} className="reply-arrow" />
+                      <div className="reply-content-box">
+                        <div className="comment-meta">
+                          <strong>{reply.author} ({reply.branch})</strong>
+                          <span className="comment-date">{reply.createdAt}</span>
+                        </div>
+                        <p className="reply-text">{reply.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <div className="comment-input-area">
+              {replyTargetId && (
+                <div className="reply-notice-bar">
+                  <span>선택한 댓글에 답글 작성 중...</span>
+                  <button onClick={() => setReplyTargetId(null)} className="cancel-reply-btn">취소</button>
+                </div>
+              )}
+              <div className="comment-form-row">
+                <input
+                  type="text"
+                  placeholder="댓글을 입력하세요..."
+                  value={commentInput}
+                  onChange={e => setCommentInput(e.target.value)}
+                  className="comment-input"
+                />
+                <button
+                  onClick={() => handleAddComment(selectedPost.id)}
+                  className="comment-submit-btn"
+                >
+                  등록
+                </button>
+              </div>
+            </div>
+          </section>
+        </main>
+      )}
+
+      {viewMode === 'write' && (
+        <main className="write-card">
+          <h2>✍️ 새 게시글 작성</h2>
+          <form onSubmit={handleCreatePost} className="write-form">
+            
+            <div className="write-row">
+              <select
+                value={newCategory}
+                onChange={e => setNewCategory(e.target.value as Category)}
+                className="write-category-select"
+              >
+                <option value="원두/재고">원두/재고</option>
+                <option value="물류/아이디어">물류/아이디어</option>
+                <option value="공지사항">공지사항</option>
+                <option value="자유소통">자유소통</option>
+              </select>
+
+              <input
+                type="text"
+                placeholder="글 제목을 입력하세요"
+                value={newTitle}
+                onChange={e => setNewTitle(e.target.value)}
+                className="write-title-input"
+                required
+              />
+            </div>
+
+            <div className="write-row">
+              <input
+                type="text"
+                value={`작성자: ${currentUser.name}`}
+                disabled
+                className="write-disabled-input"
+              />
+              <input
+                type="text"
+                value={`소속 지점: ${currentUser.branch}`}
+                disabled
+                className="write-disabled-input"
+              />
+            </div>
+
+            {currentUser.role === 'ADMIN' && (
+              <label className="pin-checkbox-label">
+                <input 
+                  type="checkbox" 
+                  checked={newIsPinned} 
+                  onChange={e => setNewIsPinned(e.target.checked)} 
+                />
+                📌 중요 공지로 상단 고정 (Notice Pinning)
+              </label>
+            )}
+
+            <textarea
+              placeholder="내용을 입력하세요..."
+              value={newContent}
+              onChange={e => setNewContent(e.target.value)}
+              rows={8}
+              className="write-textarea"
+              required
+            />
+
+            <div className="file-upload-box">
+              <label className="file-upload-label">
+                <Paperclip size={14} /> 파일/이미지 첨부
+                <input type="file" multiple onChange={handleFileUpload} style={{ display: 'none' }} />
+              </label>
+
+              {attachedFiles.length > 0 && (
+                <div className="attached-files-preview">
+                  {attachedFiles.map(file => (
+                    <div key={file.id} className="preview-chip">
+                      <span>{file.name}</span>
+                      <X size={14} onClick={() => handleRemoveFile(file.id)} className="chip-remove" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="write-btn-group">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className="cancel-btn"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                className="submit-btn"
+              >
+                등록하기
+              </button>
+            </div>
+          </form>
+        </main>
       )}
     </div>
   );
-}
+};
+
+export default CommunityBoard;
