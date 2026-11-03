@@ -122,7 +122,7 @@ export const CommunityBoard: React.FC = () => {
   const [newTitle, setNewTitle] = useState<string>('');
   const [newContent, setNewContent] = useState<string>('');
   const [newIsPinned, setNewIsPinned] = useState<boolean>(false);
-  const [newStatus, setNewStatus] = useState<ProcessStatus>('접수중');
+  const [newStatus] = useState<ProcessStatus>('접수중');
   const [attachedFiles, setAttachedFiles] = useState<FileItem[]>([]);
 
   const [commentInput, setCommentInput] = useState<string>('');
