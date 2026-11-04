@@ -31,7 +31,7 @@ export default function DashboardPage() {
   const [inventories, setInventories] = useState<InventoryItem[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 50;
 
   const [userBudget, setUserBudget] = useState<number>(300000);
   const [cart, setCart] = useState<CartItem[]>([]); 

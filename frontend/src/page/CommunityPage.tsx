@@ -8,7 +8,8 @@ import {
   CornerDownRight, 
   Search, 
   X,
-  FileText
+  FileText,
+  Download
 } from 'lucide-react';
 import './CommunityPage.css';
 
@@ -21,6 +22,7 @@ export interface FileItem {
   size: number;
   type: string;
   url?: string;
+  content?: string;
 }
 
 export interface Comment {
@@ -63,7 +65,6 @@ const currentUser: User = {
   role: 'ADMIN'
 };
 
-// 💡 선택 가능한 전체 지점 목록 리스트 정의
 const branchList = [
   '부산 서면점',
   '부산 본사 물류센터2지점',
@@ -77,15 +78,23 @@ const initialPosts: Post[] = [
   {
     id: 9,
     category: '원두/재고',
-    title: '232',
+    title: 'LLL / LOLOL 테스트 게시글',
     content: '테스트 내용입니다.',
-    author: '32',
+    author: '조우진',
     branch: '부산 서면점',
-    createdAt: '2026-08-01',
+    createdAt: '2026-11-04',
     views: 3,
     likes: 0,
     isPinned: false,
-    attachments: [],
+    attachments: [
+      {
+        id: 'file-1',
+        name: 'geniemusic.log',
+        size: 16384,
+        type: 'text/plain',
+        content: '[2026-11-04 10:30:12] [INFO] GenieMusic API Connected Successfully.\n[2026-11-04 10:30:15] [INFO] Playing track: 작은 봄 - 고추잠자리'
+      }
+    ],
     comments: []
   },
   {
@@ -133,25 +142,66 @@ export const CommunityBoard: React.FC = () => {
   const [newContent, setNewContent] = useState<string>('');
   const [newIsPinned, setNewIsPinned] = useState<boolean>(false);
   const [newStatus] = useState<ProcessStatus>('접수중');
-  
-  // 💡 새 글 작성 시 소속 지점을 선택할 수 있도록 상태 추가 (기본값은 현재 사용자 지점)
   const [selectedBranch, setSelectedBranch] = useState<string>(currentUser.branch);
 
   const [attachedFiles, setAttachedFiles] = useState<FileItem[]>([]);
   const [commentInput, setCommentInput] = useState<string>('');
   const [replyTargetId, setReplyTargetId] = useState<number | null>(null);
 
+  // 💡 실질적인 파일 다운로드 처리 함수
+  const handleFileDownload = (file: FileItem) => {
+    if (file.url) {
+      const link = document.createElement('a');
+      link.href = file.url;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const fileContent = file.content || `[CAFE LOGISTICS ERP Log File]\nFile Name: ${file.name}\nGenerated Date: ${new Date().toLocaleString()}`;
+      const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const filesArray = Array.from(e.target.files);
-    const newFiles: FileItem[] = filesArray.map((file, idx) => ({
-      id: `${Date.now()}-${idx}`,
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      url: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
-    }));
-    setAttachedFiles(prev => [...prev, ...newFiles]);
+    
+    filesArray.forEach((file, idx) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const textContent = event.target?.result as string;
+        const newFileItem: FileItem = {
+          id: `${Date.now()}-${idx}`,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          url: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+          content: textContent
+        };
+        setAttachedFiles(prev => [...prev, newFileItem]);
+      };
+      if (file.type.startsWith('image/')) {
+        const newFileItem: FileItem = {
+          id: `${Date.now()}-${idx}`,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          url: URL.createObjectURL(file)
+        };
+        setAttachedFiles(prev => [...prev, newFileItem]);
+      } else {
+        reader.readAsText(file);
+      }
+    });
   };
 
   const handleRemoveFile = (fileId: string) => {
@@ -168,7 +218,7 @@ export const CommunityBoard: React.FC = () => {
       title: newTitle,
       content: newContent,
       author: currentUser.name,
-      branch: selectedBranch, // 💡 선택한 지점 적용
+      branch: selectedBranch,
       createdAt: new Date().toISOString().split('T')[0],
       views: 0,
       likes: 0,
@@ -226,12 +276,10 @@ export const CommunityBoard: React.FC = () => {
     setReplyTargetId(null);
   };
 
-  // 💡 댓글 및 답글 삭제 함수 (휴지통 아이콘 클릭 시 실행)
   const handleDeleteComment = (postId: number, commentId: number) => {
     if (window.confirm('정말 이 댓글을 삭제하시겠습니까?')) {
       setPosts(posts.map(post => {
         if (post.id === postId) {
-          // 선택한 댓글 및 해당 댓글에 달린 하위 답글까지 함께 필터링 제거
           const updatedComments = post.comments.filter(
             c => c.id !== commentId && c.parentId !== commentId
           );
@@ -430,15 +478,22 @@ export const CommunityBoard: React.FC = () => {
             {selectedPost.content}
           </div>
 
+          {/* 💡 첨부파일 다운로드 연결 영역 */}
           {selectedPost.attachments.length > 0 && (
             <div className="attachment-box">
               <h4><Paperclip size={14} /> 첨부파일 ({selectedPost.attachments.length})</h4>
               <div className="attachment-list">
                 {selectedPost.attachments.map(file => (
-                  <div key={file.id} className="attachment-item">
+                  <div 
+                    key={file.id} 
+                    className="attachment-item clickable"
+                    onClick={() => handleFileDownload(file)}
+                    title="클릭하여 파일 다운로드"
+                  >
                     <FileText size={14} />
-                    <span>{file.name}</span>
+                    <span className="file-name-text">{file.name}</span>
                     <span className="file-size">({Math.round(file.size / 1024)} KB)</span>
+                    <Download size={13} className="download-icon" />
                   </div>
                 ))}
               </div>
@@ -464,7 +519,6 @@ export const CommunityBoard: React.FC = () => {
                     <strong>{comment.author} ({comment.branch})</strong>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span className="comment-date">{comment.createdAt}</span>
-                      {/* 💡 상위 댓글 삭제 휴지통 아이콘 버튼 */}
                       <button 
                         onClick={() => handleDeleteComment(selectedPost.id, comment.id)} 
                         style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#EF4444', padding: 0 }}
@@ -491,7 +545,6 @@ export const CommunityBoard: React.FC = () => {
                           <strong>{reply.author} ({reply.branch})</strong>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span className="comment-date">{reply.createdAt}</span>
-                            {/* 💡 답글 삭제 휴지통 아이콘 버튼 */}
                             <button 
                               onClick={() => handleDeleteComment(selectedPost.id, reply.id)} 
                               style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#EF4444', padding: 0 }}
@@ -540,7 +593,6 @@ export const CommunityBoard: React.FC = () => {
         <main className="write-card">
           <h2>✍️ 새 게시글 작성</h2>
           <form onSubmit={handleCreatePost} className="write-form">
-            
             <div className="write-row">
               <select
                 value={newCategory}
@@ -570,7 +622,6 @@ export const CommunityBoard: React.FC = () => {
                 disabled
                 className="write-disabled-input"
               />
-              {/* 💡 소속 지점을 고정값 대신 선택할 수 있는 드롭다운(<select>)으로 변경 */}
               <select
                 value={selectedBranch}
                 onChange={e => setSelectedBranch(e.target.value)}

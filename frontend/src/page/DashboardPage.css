@@ -402,3 +402,34 @@
   padding-top: 8px;
   border-top: 1px solid #F7F5F0;
 }
+
+/* 💡 첨부파일 다운로드 클릭 인터랙션 CSS */
+.attachment-item.clickable {
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+
+.attachment-item.clickable:hover {
+  background-color: #F3F4F6;
+  border-color: #2563EB;
+  color: #2563EB;
+}
+
+.file-name-text {
+  font-weight: 600;
+  color: #2563EB;
+  text-decoration: underline;
+}
+
+.download-icon {
+  color: #2563EB;
+  margin-left: 4px;
+}

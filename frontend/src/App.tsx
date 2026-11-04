@@ -5,7 +5,7 @@ import CommunityPage from './page/CommunityPage';
 import AdminPage from './page/AdminPage';
 import Mypage from './page/Mypage';
 import InventoryLogPage from './page/InventoryLogPage';
-import DeliverySchedulePage from './page/DeliverySchedulePage'; // 👈 1. 배송 스케줄 페이지 임포트
+import DeliverySchedulePage from './page/DeliverySchedulePage';
 import './App.css';
 
 function App() {

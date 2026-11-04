@@ -19,6 +19,8 @@ export default function DeliverySchedulePage() {
   const [newBranch, setNewBranch] = useState<string>('부산 서면점');
   const [newNote, setNewNote] = useState<string>('');
 
+  const [editingId, setEditingId] = useState<number | null>(null);
+
   const [schedules, setSchedules] = useState<ScheduleItem[]>([
     { id: 1, date: '2026-11-04', branch: '부산 서면점', driver: '김기사 (부산 1호차)', status: '배송완료', note: '오전 10시 원두 및 시럽 납품 완료' },
     { id: 2, date: '2026-11-04', branch: '부산 센텀점', driver: '박기사 (부산 2호차)', status: '배송중', note: '버터떡 세트 긴급 물류 배송 중' },
@@ -32,22 +34,54 @@ export default function DeliverySchedulePage() {
   const firstDayOfWeek = new Date(selectedYear, selectedMonth - 1, 1).getDay();
   const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
 
-  const handleAddSchedule = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newNote) return;
 
-    const newItem: ScheduleItem = {
-      id: Date.now(),
-      date: formDate,
-      branch: newBranch,
-      driver: '배송 담당자 미배정',
-      status: '출발대기',
-      note: newNote,
-    };
+    if (editingId !== null) {
+      setSchedules(schedules.map(item => 
+        item.id === editingId 
+          ? { ...item, date: formDate, branch: newBranch, note: newNote }
+          : item
+      ));
+      alert('스케줄이 성공적으로 수정되었습니다.');
+      setEditingId(null);
+    } else {
+      const newItem: ScheduleItem = {
+        id: Date.now(),
+        date: formDate,
+        branch: newBranch,
+        driver: '배송 담당자 미배정',
+        status: '출발대기',
+        note: newNote,
+      };
+      setSchedules([...schedules, newItem]);
+      alert(`${formDate} 날짜에 새로운 배송 및 지점 스케줄이 등록되었습니다.`);
+    }
 
-    setSchedules([...schedules, newItem]);
     setNewNote('');
-    alert(`${formDate} 날짜에 새로운 배송 및 지점 스케줄이 등록되었습니다.`);
+  };
+
+  const handleStartEdit = (item: ScheduleItem) => {
+    setEditingId(item.id);
+    setFormDate(item.date);
+    setNewBranch(item.branch);
+    setNewNote(item.note);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setNewNote('');
+  };
+
+  const handleDeleteSchedule = (id: number) => {
+    if (window.confirm('정말로 이 스케줄을 삭제하시겠습니까?')) {
+      setSchedules(schedules.filter(item => item.id !== id));
+      if (editingId === id) {
+        handleCancelEdit();
+      }
+      alert('스케줄이 삭제되었습니다.');
+    }
   };
 
   const filteredSchedules = schedules.filter((s: ScheduleItem) => s.date === selectedDate);
@@ -57,7 +91,6 @@ export default function DeliverySchedulePage() {
     const formattedDay = String(dayNumber).padStart(2, '0');
     const fullDate = `${selectedYear}-${formattedMonth}-${formattedDay}`;
     setSelectedDate(fullDate);
-    setFormDate(fullDate);
   };
 
   return (
@@ -72,7 +105,6 @@ export default function DeliverySchedulePage() {
         <div className="calendar-card">
           <div className="calendar-top">
             <div className="date-picker-group">
-              {/* 연도 선택 드롭다운 */}
               <div className="select-wrapper">
                 <select
                   value={selectedYear}
@@ -85,7 +117,6 @@ export default function DeliverySchedulePage() {
                 </select>
               </div>
 
-              {/* 월 선택 드롭다운 */}
               <div className="select-wrapper">
                 <select
                   value={selectedMonth}
@@ -145,7 +176,21 @@ export default function DeliverySchedulePage() {
                 <div key={item.id} className="schedule-item-box">
                   <div className="item-top-row">
                     <strong>{item.branch}</strong>
-                    <span className={`status-badge ${item.status}`}>{item.status}</span>
+                    <div className="schedule-action-group">
+                      <span className={`status-badge ${item.status}`}>{item.status}</span>
+                      <button 
+                        onClick={() => handleStartEdit(item)}
+                        className="btn-item-edit"
+                      >
+                        수정
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteSchedule(item.id)}
+                        className="btn-item-delete"
+                      >
+                        삭제
+                      </button>
+                    </div>
                   </div>
                   <p className="driver-info">👤 담당: {item.driver}</p>
                   <p className="note-text">📝 {item.note}</p>
@@ -156,8 +201,22 @@ export default function DeliverySchedulePage() {
             )}
           </div>
 
-          <form onSubmit={handleAddSchedule} className="schedule-form">
-            <h4>➕ 지점 특이사항 및 배송 일정 추가</h4>
+          <form onSubmit={handleFormSubmit} className="schedule-form">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h4 style={{ margin: 0 }}>
+                {editingId !== null ? '✏️ 지점 스케줄 수정하기' : '➕ 지점 특이사항 및 배송 일정 추가'}
+              </h4>
+              {editingId !== null && (
+                <button 
+                  type="button" 
+                  onClick={handleCancelEdit}
+                  style={{ background: '#8d7967', color: '#fff', border: 'none', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}
+                >
+                  수정 취소
+                </button>
+              )}
+            </div>
+
             <div className="form-row">
               <input
                 type="date"
@@ -188,7 +247,13 @@ export default function DeliverySchedulePage() {
                 className="form-input"
               />
             </div>
-            <button type="submit" className="form-submit-btn">일정 등록하기</button>
+            <button 
+              type="submit" 
+              className="form-submit-btn"
+              style={{ backgroundColor: editingId !== null ? '#c7a75c' : '#4e3629' }}
+            >
+              {editingId !== null ? '스케줄 수정 완료' : '일정 등록하기'}
+            </button>
           </form>
         </div>
       </div>
