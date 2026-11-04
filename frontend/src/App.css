@@ -3,6 +3,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #fbf9f6; /* 화면 바깥 기본 바탕도 통일감 있는 카페 베이지로 통일 */
+  overflow-x: hidden; /* 모바일에서 가로 스크롤 방지 */
 }
 
 .cafe-container {
@@ -57,22 +58,12 @@ body {
   width: 100%;
 }
 
-/* 해상도가 낮아지면 세로로 유연하게 정렬 변환 */
-@media (max-width: 1100px) {
-  .cafe-main-layout {
-    flex-direction: column;
-  }
-  .right-sidebar {
-    position: static !important;
-    width: 100% 
-  }
-}
-
 /* 왼쪽: 대량의 상품 카드를 채울 메인 영역 확장 */
 .left-content {
   flex: 2.2; /* 상품 그리드를 더 시원하게 보이게 비율 확장 */
   display: flex;
   flex-direction: column;
+  min-width: 0; /* flex 자식 요소 너비 넘침 방지 */
 }
 
 /* 오른쪽: 쇼핑 리스트 우측 영수증 고정 고급 패널 */
@@ -286,7 +277,7 @@ body {
 /* 📋 대형 그리드 (넓어진 전체화면에 맞춰 균형 배치) */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 20px;
 }
 
@@ -448,12 +439,12 @@ body {
   border-radius: 30px;
   border: 1px solid #e0d8d0;
   
-  /* 오른쪽 상단 고정 스타일 */
-  position: fixed;   /* 또는 absolute */
-  top: 60px;         /* 위쪽에서 20px 떨어지게 */
-  right: 60px;       /* 오른쪽에서 30px 떨어지게 (보라색 위치) */
+  position: fixed;   
+  top: 20px;         
+  right: 30px;       
   z-index: 1000;
 }
+
 .music-info {
   text-align: left;
 }
@@ -472,3 +463,79 @@ body {
 }
 
 .player-btn:hover { background: #6d5b4d; }
+
+
+/* ==========================================================
+   📱 모바일 및 태블릿 반응형 미디어 쿼리 (추가/보완된 부분)
+   ========================================================== */
+@media screen and (max-width: 1100px) {
+  /* 메인 레이아웃 세로 정렬 및 사이드바 상단 고정 해제 */
+  .cafe-main-layout {
+    flex-direction: column !important;
+  }
+  .right-sidebar {
+    position: static !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  /* 1. 전체 앱 틀을 세로(column)로 변경 (사이드바가 위로 가고 본문이 아래로 감) */
+  div[style*="display: flex"] {
+    flex-direction: column !important;
+    overflow-y: auto !important;
+  }
+
+  /* 2. 왼쪽 고정 사이드바를 모바일 상단 바 형태로 변경 */
+  div[style*="width: 260px"] {
+    width: 100% !important;
+    height: auto !important;
+    padding: 12px 15px !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  /* 사이드바 내부 네비게이션 메뉴 가로 스크롤/정렬 */
+  div[style*="width: 260px"] nav {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  /* 3. 우측 메인 콘텐츠 영역 패딩 축소 */
+  div[style*="flex: 1"][style*="overflow-y: auto"],
+  .cafe-container {
+    padding: 15px !important;
+    height: auto !important;
+  }
+
+  /* 4. 상단 음악 플레이어 위치 조정 (모바일 화면 침범 방지) */
+  .music-player-zone {
+    position: static !important;
+    margin-bottom: 20px;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 5. 대시보드 전광판 카드 세로 정렬 */
+  .dashboard-zone {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* 6. 상품 카드 그리드 1열로 변경 */
+  .product-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 7. 타이틀 크기 조정 */
+  .cafe-header h1 {
+    font-size: 26px;
+  }
+  .cafe-header span {
+    font-size: 35px;
+  }
+}

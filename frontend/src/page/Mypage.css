@@ -337,6 +337,31 @@
   background-color: #3e2723;
 }
 
+/* 아이디, 비밀번호 찾기 링크 스타일 */
+.find-credentials-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0 10px 0;
+  font-size: 13px;
+  color: #666666;
+}
+
+.find-link {
+  cursor: pointer;
+}
+
+.find-link:hover {
+  text-decoration: underline;
+  color: #3e2723;
+}
+
+.find-divider {
+  color: #ccc;
+  font-size: 12px;
+}
+
 .oauth-section-wrap {
   margin-top: 20px;
   border-top: 1px solid #efebe9;

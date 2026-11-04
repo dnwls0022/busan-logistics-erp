@@ -63,6 +63,16 @@ const currentUser: User = {
   role: 'ADMIN'
 };
 
+// 💡 선택 가능한 전체 지점 목록 리스트 정의
+const branchList = [
+  '부산 서면점',
+  '부산 본사 물류센터2지점',
+  '서울 강남점',
+  '대구 동성로점',
+  '대전 타임월드점',
+  '광주 상무점'
+];
+
 const initialPosts: Post[] = [
   {
     id: 9,
@@ -70,7 +80,7 @@ const initialPosts: Post[] = [
     title: '232',
     content: '테스트 내용입니다.',
     author: '32',
-    branch: '232',
+    branch: '부산 서면점',
     createdAt: '2026-08-01',
     views: 3,
     likes: 0,
@@ -123,8 +133,11 @@ export const CommunityBoard: React.FC = () => {
   const [newContent, setNewContent] = useState<string>('');
   const [newIsPinned, setNewIsPinned] = useState<boolean>(false);
   const [newStatus] = useState<ProcessStatus>('접수중');
-  const [attachedFiles, setAttachedFiles] = useState<FileItem[]>([]);
+  
+  // 💡 새 글 작성 시 소속 지점을 선택할 수 있도록 상태 추가 (기본값은 현재 사용자 지점)
+  const [selectedBranch, setSelectedBranch] = useState<string>(currentUser.branch);
 
+  const [attachedFiles, setAttachedFiles] = useState<FileItem[]>([]);
   const [commentInput, setCommentInput] = useState<string>('');
   const [replyTargetId, setReplyTargetId] = useState<number | null>(null);
 
@@ -155,7 +168,7 @@ export const CommunityBoard: React.FC = () => {
       title: newTitle,
       content: newContent,
       author: currentUser.name,
-      branch: currentUser.branch,
+      branch: selectedBranch, // 💡 선택한 지점 적용
       createdAt: new Date().toISOString().split('T')[0],
       views: 0,
       likes: 0,
@@ -211,6 +224,22 @@ export const CommunityBoard: React.FC = () => {
 
     setCommentInput('');
     setReplyTargetId(null);
+  };
+
+  // 💡 댓글 및 답글 삭제 함수 (휴지통 아이콘 클릭 시 실행)
+  const handleDeleteComment = (postId: number, commentId: number) => {
+    if (window.confirm('정말 이 댓글을 삭제하시겠습니까?')) {
+      setPosts(posts.map(post => {
+        if (post.id === postId) {
+          // 선택한 댓글 및 해당 댓글에 달린 하위 답글까지 함께 필터링 제거
+          const updatedComments = post.comments.filter(
+            c => c.id !== commentId && c.parentId !== commentId
+          );
+          return { ...post, comments: updatedComments };
+        }
+        return post;
+      }));
+    }
   };
 
   const filteredPosts = posts.filter(post => {
@@ -319,7 +348,6 @@ export const CommunityBoard: React.FC = () => {
                     <td className="col-num">
                       {post.isPinned ? <Pin size={16} className="pin-icon" /> : post.id}
                     </td>
-                    {/* 가로 정렬되어 깔끔하게 나오는 분류/지점 영역 */}
                     <td className="col-category">
                       <div className="tag-group">
                         <span className="badge-category">{post.category}</span>
@@ -434,7 +462,17 @@ export const CommunityBoard: React.FC = () => {
                 <div key={comment.id} className="comment-item-box">
                   <div className="comment-meta">
                     <strong>{comment.author} ({comment.branch})</strong>
-                    <span className="comment-date">{comment.createdAt}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="comment-date">{comment.createdAt}</span>
+                      {/* 💡 상위 댓글 삭제 휴지통 아이콘 버튼 */}
+                      <button 
+                        onClick={() => handleDeleteComment(selectedPost.id, comment.id)} 
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#EF4444', padding: 0 }}
+                        title="댓글 삭제"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                   <p className="comment-text">{comment.content}</p>
                   
@@ -451,7 +489,17 @@ export const CommunityBoard: React.FC = () => {
                       <div className="reply-content-box">
                         <div className="comment-meta">
                           <strong>{reply.author} ({reply.branch})</strong>
-                          <span className="comment-date">{reply.createdAt}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="comment-date">{reply.createdAt}</span>
+                            {/* 💡 답글 삭제 휴지통 아이콘 버튼 */}
+                            <button 
+                              onClick={() => handleDeleteComment(selectedPost.id, reply.id)} 
+                              style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#EF4444', padding: 0 }}
+                              title="답글 삭제"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </div>
                         <p className="reply-text">{reply.content}</p>
                       </div>
@@ -522,12 +570,19 @@ export const CommunityBoard: React.FC = () => {
                 disabled
                 className="write-disabled-input"
               />
-              <input
-                type="text"
-                value={`소속 지점: ${currentUser.branch}`}
-                disabled
-                className="write-disabled-input"
-              />
+              {/* 💡 소속 지점을 고정값 대신 선택할 수 있는 드롭다운(<select>)으로 변경 */}
+              <select
+                value={selectedBranch}
+                onChange={e => setSelectedBranch(e.target.value)}
+                className="write-category-select"
+                style={{ width: '100%', flex: 1, backgroundColor: '#FFF' }}
+              >
+                {branchList.map((branchName) => (
+                  <option key={branchName} value={branchName}>
+                    소속 지점: {branchName}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {currentUser.role === 'ADMIN' && (

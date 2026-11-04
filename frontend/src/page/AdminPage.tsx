@@ -30,7 +30,7 @@ export default function AdminPage() {
         return;
       }
     } else {
-      alert('로그인이 필요합니다.');
+      alert('관리자만 접근할 수 있는 페이지입니다.');
       window.location.href = '/mypage';
       return;
     }
