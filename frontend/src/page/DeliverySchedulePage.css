@@ -1,0 +1,254 @@
+.schedule-container {
+  padding: 10px;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: #4e3629;
+}
+
+.schedule-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.schedule-header h2 {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.schedule-header p {
+  color: #8d7967;
+  font-size: 14px;
+  margin: 0;
+}
+
+.schedule-title-line {
+  width: 60px;
+  height: 4px;
+  background-color: #c7a75c;
+  margin: 15px auto 0 auto;
+  border-radius: 2px;
+}
+
+.schedule-content-layout {
+  display: flex;
+  gap: 25px;
+  align-items: flex-start;
+}
+
+/* 캘린더 카드 스타일 */
+.calendar-card {
+  flex: 1.2;
+  background: #fff;
+  border: 1px solid #ebdccb;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(78, 54, 41, 0.03);
+}
+
+.calendar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 2px dashed #faf6f0;
+  padding-bottom: 12px;
+}
+
+.calendar-top h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #4e3629;
+}
+
+.badge-sub {
+  font-size: 11px;
+  color: #8d7967;
+  background: #faf6f0;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.calendar-weekday {
+  font-weight: bold;
+  color: #8d7967;
+  font-size: 13px;
+  padding-bottom: 8px;
+}
+
+.calendar-day {
+  background: #fdfaf5;
+  border: 1px solid #f5ede4;
+  border-radius: 8px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: 0.2s;
+}
+
+.calendar-day:hover {
+  border-color: #c7a75c;
+  background: #fff;
+}
+
+.calendar-day.selected {
+  background: #4e3629;
+  color: #fff;
+  border-color: #4e3629;
+}
+
+.calendar-day.selected .day-number {
+  color: #fff;
+}
+
+.day-number {
+  font-size: 14px;
+  font-weight: bold;
+  color: #4e3629;
+}
+
+.event-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #c7a75c;
+  border-radius: 50%;
+  margin-top: 4px;
+}
+
+/* 우측 상세 스케줄 카드 스타일 */
+.schedule-detail-card {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #ebdccb;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(78, 54, 41, 0.03);
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #f5ede4;
+  padding-bottom: 12px;
+}
+
+.detail-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #4e3629;
+}
+
+.date-badge {
+  font-size: 12px;
+  font-weight: bold;
+  color: #c7a75c;
+  background: #faf6f0;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.schedule-list {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.schedule-item-box {
+  background: #faf6f0;
+  border: 1px solid #ebdccb;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.item-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.status-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+.status-badge.배송완료 { background: #e8f5e9; color: #2e7d32; }
+.status-badge.배송중 { background: #fff3e0; color: #e65100; }
+.status-badge.출발대기 { background: #efebe9; color: #5d4037; }
+
+.driver-info, .note-text {
+  margin: 2px 0;
+  font-size: 12px;
+  color: #8d7967;
+}
+
+.no-schedule {
+  text-align: center;
+  padding: 30px;
+  color: #8d7967;
+  font-size: 13px;
+  background: #faf6f0;
+  border-radius: 10px;
+}
+
+/* 등록 폼 스타일 */
+.schedule-form {
+  border-top: 2px dashed #faf6f0;
+  padding-top: 15px;
+}
+
+.schedule-form h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #4e3629;
+}
+
+.form-row {
+  margin-bottom: 8px;
+}
+
+.form-select, .form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ebdccb;
+  outline: none;
+  font-size: 13px;
+  background-color: #faf6f0;
+  box-sizing: border-box;
+  color: #4e3629;
+}
+
+.form-submit-btn {
+  width: 100%;
+  padding: 10px;
+  background: #4e3629;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.form-submit-btn:hover {
+  background: #6b4e3d;
+}
