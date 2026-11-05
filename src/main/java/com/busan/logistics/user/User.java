@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "users") // 테이블 이름은 환경에 맞게 확인
+@Table(name = "users")
 @Getter
 @Setter
 public class User {
@@ -22,6 +24,12 @@ public class User {
     private String role;
     private String provider;
 
-    // 💡 이 부분이 빠져있어서 에러가 난 것입니다. 아래 status 필드를 추가해 주세요!
+    // 1. 계정 상태 필드 (ACTIVE, SUSPENDED, DEACTIVATED)
     private String status;
+
+    // 2. 마지막 접속 일시 필드 (Lombok @Getter/@Setter가 자동으로 생성해 줍니다)
+    private LocalDateTime lastLoginAt;
+
+    // 관리자 코드 필드가 필요하다면 아래도 추가해 주세요!
+    // private String adminCode;
 }

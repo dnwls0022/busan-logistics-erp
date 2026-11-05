@@ -29,6 +29,12 @@ dependencies {
 	testCompileOnly 'org.projectlombok:lombok'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	//기존에 작성된 라이브러리들...	//
+		//		// 이 부분을 추가해주세요!
+		implementation 'org.jboss.logging:jboss-logging'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 }
 
 tasks.named('test') {
