@@ -39,9 +39,12 @@ export default function Mypage() {
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
+  // 아이디/비밀번호 찾기 (이메일 인증 기반 2단계 상태)
   const [isFindModalOpen, setIsFindModalOpen] = useState(false);
   const [findType, setFindType] = useState<'id' | 'pw'>('id');
   const [findForm, setFindForm] = useState({ name: '', phone: '', email: '' });
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isCodeSent, setIsCodeSent] = useState(false);
   const [findResult, setFindResult] = useState('');
 
   const [loginTab, setLoginTab] = useState<'personal' | 'corporate'>('personal');
@@ -55,7 +58,6 @@ export default function Mypage() {
   const KAKAO_REDIRECT_URI = `${window.location.origin}/oauth/kakao`;
 
   useEffect(() => {
-    // 🟢 새로고침하거나 다른 페이지 다녀와도 localStorage에서 로그인 상태 복원
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
@@ -298,7 +300,6 @@ export default function Mypage() {
     setUserInfo(tempInfo);
     setIsEditing(false);
     
-    // 수정된 정보도 localStorage에 반영
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
@@ -355,20 +356,33 @@ export default function Mypage() {
     e.preventDefault();
     try {
       if (findType === 'id') {
-        const res = await axios.post('/api/users/find-email', {
-          name: findForm.name,
-          phone: findForm.phone
-        });
-        setFindResult(`찾은 아이디(이메일): ${res.data.email}`);
+        if (!isCodeSent) {
+          const res = await axios.post('/api/users/send-verification', {
+            name: findForm.name,
+            email: findForm.email
+          });
+          setIsCodeSent(true);
+          setFindResult(res.data || '입력하신 이메일로 인증번호가 전송되었습니다.');
+        } else {
+          const res = await axios.post('/api/users/verify-and-find-id', {
+            name: findForm.name,
+            email: findForm.email,
+            code: verificationCode
+          });
+          const email = typeof res.data === 'string' ? res.data : (res.data.email || res.data.message);
+          setFindResult(`🎉 찾은 아이디(이메일): ${email}`);
+        }
       } else {
         const res = await axios.post('/api/users/reset-password', {
-          email: findForm.email,
-          phone: findForm.phone
+          name: findForm.name,
+          email: findForm.email
         });
-        setFindResult(res.data.message || '임시 비밀번호가 발급되었습니다.');
+        const message = typeof res.data === 'string' ? res.data : (res.data.message || '임시 비밀번호가 발급되었습니다.');
+        setFindResult(message);
       }
     } catch (err: any) {
-      alert(err.response?.data || '일치하는 정보를 찾지 못했습니다.');
+      const errorMsg = err.response?.data?.message || err.response?.data || '요청 처리에 실패했습니다.';
+      alert(typeof errorMsg === 'string' ? errorMsg : '다시 시도해 주세요.');
     }
   };
 
@@ -396,7 +410,7 @@ export default function Mypage() {
             <div className="profile-info-wrap">
               <div>
                 <span className="modal-top-subtitle">카페 물류 시스템의 모든 것</span>
-                <h3 className="profile-name" style={{ fontSize: '20px', marginTop: '4px' }}>☕ CAFE LOGISTICS ERP</h3>
+                <h3 className="profile-name profile-name-guest">☕ CAFE LOGISTICS ERP</h3>
               </div>
             </div>
           )}
@@ -414,9 +428,8 @@ export default function Mypage() {
         {isLoggedIn && (
           <>
             <h4 
-              className="section-title" 
+              className="section-title section-title-toggle" 
               onClick={() => setIsDetailOpen(!isDetailOpen)} 
-              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', userSelect: 'none' }}
             >
               <span>{isDetailOpen ? '▼' : '▶'}</span> 📋 상세 계정 정보
             </h4>
@@ -466,56 +479,41 @@ export default function Mypage() {
         <>
           <div className="card">
             <h4 className="section-title">✨ CAFE LOGISTICS 주요 서비스</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-              <div style={{ background: '#fff', border: '1px solid #d7ccc8', borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
-                <div style={{ fontSize: '24px', marginBottom: '8px' }}>📦</div>
-                <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#3e2723', marginBottom: '4px' }}>실시간 재고 관리</div>
-                <div style={{ fontSize: '12px', color: '#795548' }}>원두, 부자재 입출고 및 보유 수량 즉시 조회</div>
+            <div className="service-grid">
+              <div className="service-card">
+                <div className="service-icon">📦</div>
+                <div className="service-title">실시간 재고 관리</div>
+                <div className="service-desc">원두, 부자재 입출고 및 보유 수량 즉시 조회</div>
               </div>
-              <div style={{ background: '#fff', border: '1px solid #d7ccc8', borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
-                <div style={{ fontSize: '24px', marginBottom: '8px' }}>🗺️</div>
-                <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#3e2723', marginBottom: '4px' }}>지점 위치 현황</div>
-                <div style={{ fontSize: '12px', color: '#795548' }}>카카오 맵 연동 지점 정보 및 로드뷰 탐색</div>
+              <div className="service-card">
+                <div className="service-icon">🗺️</div>
+                <div className="service-title">지점 위치 현황</div>
+                <div className="service-desc">카카오 맵 연동 지점 정보 및 로드뷰 탐색</div>
               </div>
-              <div style={{ background: '#fff', border: '1px solid #d7ccc8', borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
-                <div style={{ fontSize: '24px', marginBottom: '8px' }}>📢</div>
-                <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#3e2723', marginBottom: '4px' }}>통합 소통 게시판</div>
-                <div style={{ fontSize: '12px', color: '#795548' }}>본사 공지사항 및 지점 간 요청사항 관리</div>
+              <div className="service-card">
+                <div className="service-icon">📢</div>
+                <div className="service-title">통합 소통 게시판</div>
+                <div className="service-desc">본사 공지사항 및 지점 간 요청사항 관리</div>
               </div>
             </div>
           </div>
 
           <div className="card">
             <h4 className="section-title">💡 이용 안내 & 지원 서비스</h4>
-            <div className="info-row">
-              <span className="info-label">시스템 운영 시간</span>
-              <span className="info-value">365일 24시간 연중무휴 상시 가동</span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">관리자 계정 문의</span>
-              <span className="info-value">logistics_admin@cafelog.com</span>
-            </div>
-            <div className="info-row-last">
-              <span className="info-label">본사 물류 지원센터</span>
-              <span className="info-value">051-123-4567 (평일 09:00 ~ 18:00)</span>
-            </div>
+            <div className="info-row"><span className="info-label">시스템 운영 시간</span><span className="info-value">365일 24시간 연중무휴 상시 가동</span></div>
+            <div className="info-row"><span className="info-label">관리자 계정 문의</span><span className="info-value">logistics_admin@cafelog.com</span></div>
+            <div className="info-row-last"><span className="info-label">본사 물류 지원센터</span><span className="info-value">051-123-4567 (평일 09:00 ~ 18:00)</span></div>
           </div>
         </>
       ) : (
         <>
           <div className="card">
             <h4 className="section-title">🚀 빠른 바로가기 및 업무 메뉴</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-              <button 
-                onClick={() => navigate('/')}
-                style={{ padding: '14px', background: '#fff', border: '1px solid #8d6e63', borderRadius: '8px', color: '#3e2723', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}
-              >
+            <div className="quick-menu-grid">
+              <button onClick={() => navigate('/')} className="quick-menu-btn">
                 📦 재고 관리 대시보드로 이동
               </button>
-              <button 
-                onClick={() => navigate('/community')}
-                style={{ padding: '14px', background: '#fff', border: '1px solid #8d6e63', borderRadius: '8px', color: '#3e2723', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}
-              >
+              <button onClick={() => navigate('/community')} className="quick-menu-btn">
                 📢 커뮤니티 게시판 바로가기
               </button>
             </div>
@@ -525,7 +523,7 @@ export default function Mypage() {
             <h4 className="section-title">📊 지점 운영 상태 요약</h4>
             <div className="info-row"><span className="info-label">현재 접속 지점</span><span className="info-value">{userInfo.branch || '본사 물류센터'}</span></div>
             <div className="info-row"><span className="info-label">담당 업무 권한</span><span className="info-value">{userInfo.role}</span></div>
-            <div className="info-row-last"><span className="info-label">시스템 상태</span><span className="info-value" style={{ color: '#2e7d32', fontWeight: 'bold' }}>정상 가동 중 (ONLINE)</span></div>
+            <div className="info-row-last"><span className="info-label">시스템 상태</span><span className="info-value status-online">정상 가동 중 (ONLINE)</span></div>
           </div>
         </>
       )}
@@ -556,41 +554,22 @@ export default function Mypage() {
             </div>
             
             <form onSubmit={handleLoginSubmit} className="login-form-layout">
-              <input 
-                type="text" 
-                placeholder={loginTab === 'corporate' ? "관리자 이메일 (dnwls00@admin.com)" : "통합 ID 또는 이메일 입력"} 
-                value={loginForm.id} 
-                onChange={(e) => setLoginForm({ ...loginForm, id: e.target.value })} 
-                className="form-input" 
-              />
-              <input 
-                type="password" 
-                placeholder="비밀번호 입력" 
-                value={loginForm.password} 
-                onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} 
-                className="form-input" 
-              />
+              <input type="text" placeholder={loginTab === 'corporate' ? "관리자 이메일 (dnwls00@admin.com)" : "통합 ID 또는 이메일 입력"} value={loginForm.id} onChange={(e) => setLoginForm({ ...loginForm, id: e.target.value })} className="form-input" />
+              <input type="password" placeholder="비밀번호 입력" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} className="form-input" />
               
               {loginTab === 'corporate' && (
-                <input 
-                  type="password" 
-                  maxLength={4}
-                  placeholder="관리자 코드 숫자 4자리 입력 (ex: 7328)" 
-                  value={loginForm.adminCode} 
-                  onChange={(e) => setLoginForm({ ...loginForm, adminCode: e.target.value })} 
-                  className="form-input" 
-                />
+                <input type="password" maxLength={4} placeholder="관리자 코드 숫자 4자리 입력 (ex: 7328)" value={loginForm.adminCode} onChange={(e) => setLoginForm({ ...loginForm, adminCode: e.target.value })} className="form-input" />
               )}
 
               <button type="submit" className="login-submit-button">로그인</button>
             </form>
 
             <div className="find-credentials-wrap">
-              <span className="find-link" onClick={() => { setFindType('id'); setIsFindModalOpen(true); setFindResult(''); }}>
+              <span className="find-link" onClick={() => { setFindType('id'); setIsFindModalOpen(true); setIsCodeSent(false); setVerificationCode(''); setFindResult(''); }}>
                 아이디 찾기
               </span>
               <span className="find-divider">|</span>
-              <span className="find-link" onClick={() => { setFindType('pw'); setIsFindModalOpen(true); setFindResult(''); }}>
+              <span className="find-link" onClick={() => { setFindType('pw'); setIsFindModalOpen(true); setIsCodeSent(false); setVerificationCode(''); setFindResult(''); }}>
                 비밀번호 찾기
               </span>
             </div>
@@ -607,48 +586,55 @@ export default function Mypage() {
         </div>
       )}
 
+      {/* 아이디/비밀번호 찾기 모달 */}
       {isFindModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="signup-modal-header">
               <h3 className="signup-modal-title">
-                {findType === 'id' ? '🔍 아이디 찾기' : '🔑 비밀번호 찾기'}
+                {findType === 'id' ? '🔍 아이디 찾기 (이메일 인증)' : '🔑 비밀번호 찾기'}
               </h3>
-              <button onClick={() => setIsFindModalOpen(false)} className="modal-close-btn">✕</button>
+              <button onClick={() => { setIsFindModalOpen(false); setIsCodeSent(false); setVerificationCode(''); }} className="modal-close-btn">✕</button>
             </div>
             
             <form onSubmit={handleFindSubmit} className="signup-form-layout">
-              {findType === 'pw' && (
-                <input 
-                  type="email" 
-                  placeholder="가입한 이메일 입력" 
-                  value={findForm.email} 
-                  onChange={(e) => setFindForm({ ...findForm, email: e.target.value })} 
-                  className="form-input" 
-                  required
-                />
-              )}
               <input 
                 type="text" 
                 placeholder="이름 입력" 
                 value={findForm.name} 
                 onChange={(e) => setFindForm({ ...findForm, name: e.target.value })} 
                 className="form-input" 
+                disabled={isCodeSent && findType === 'id'} 
                 required
               />
               <input 
-                type="text" 
-                placeholder="연락처 입력 (예: 010-1234-5678)" 
-                value={findForm.phone} 
-                onChange={(e) => setFindForm({ ...findForm, phone: e.target.value })} 
+                type="email" 
+                placeholder="가입한 이메일 입력" 
+                value={findForm.email} 
+                onChange={(e) => setFindForm({ ...findForm, email: e.target.value })} 
                 className="form-input" 
+                disabled={isCodeSent && findType === 'id'} 
                 required
               />
-              <button type="submit" className="submit-button">확인</button>
+
+              {isCodeSent && findType === 'id' && (
+                <input 
+                  type="text" 
+                  placeholder="메일로 받은 인증번호 6자리 입력" 
+                  value={verificationCode} 
+                  onChange={(e) => setVerificationCode(e.target.value)} 
+                  className="form-input" 
+                  required
+                />
+              )}
+
+              <button type="submit" className="submit-button">
+                {findType === 'id' && !isCodeSent ? '인증메일 전송' : '확인'}
+              </button>
             </form>
 
             {findResult && (
-              <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#efebe9', borderRadius: '6px', fontSize: '13px', textAlign: 'center', color: '#3e2723', fontWeight: 'bold' }}>
+              <div className="find-result-box">
                 {findResult}
               </div>
             )}

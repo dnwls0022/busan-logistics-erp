@@ -75,6 +75,11 @@
   color: #3e2723;
 }
 
+.profile-name-guest {
+  font-size: 20px;
+  margin-top: 4px;
+}
+
 .branch-badge {
   background-color: #efebe9;
   color: #5d4037;
@@ -153,6 +158,14 @@
   margin-bottom: 15px;
 }
 
+.section-title-toggle {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
 .info-row {
   display: flex;
   justify-content: space-between;
@@ -176,6 +189,11 @@
 .info-value {
   color: #3e2723;
   font-weight: 500;
+}
+
+.status-online {
+  color: #2e7d32;
+  font-weight: bold;
 }
 
 .info-footer-wrap {
@@ -215,6 +233,59 @@
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 4px;
+}
+
+/* 주요 서비스 및 빠른 바로가기 그리드 스타일 */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.service-card {
+  background: #fff;
+  border: 1px solid #d7ccc8;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.service-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.service-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #3e2723;
+  margin-bottom: 4px;
+}
+
+.service-desc {
+  font-size: 12px;
+  color: #795548;
+}
+
+.quick-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.quick-menu-btn {
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #8d6e63;
+  border-radius: 8px;
+  color: #3e2723;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: left;
+}
+
+.quick-menu-btn:hover {
+  background: #efebe9;
 }
 
 /* 모달 스타일 */
@@ -337,7 +408,6 @@
   background-color: #3e2723;
 }
 
-/* 아이디, 비밀번호 찾기 링크 스타일 */
 .find-credentials-wrap {
   display: flex;
   justify-content: center;
@@ -360,6 +430,17 @@
 .find-divider {
   color: #ccc;
   font-size: 12px;
+}
+
+.find-result-box {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #efebe9;
+  border-radius: 6px;
+  font-size: 13px;
+  text-align: center;
+  color: #3e2723;
+  font-weight: bold;
 }
 
 .oauth-section-wrap {
