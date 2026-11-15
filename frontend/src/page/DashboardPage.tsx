@@ -54,8 +54,9 @@ export default function DashboardPage() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    fetch('/api/inventories?size=1000') 
+useEffect(() => {
+    // 💡 Render 백엔드 주소를 통째로 넣어줍니다!
+    fetch('https://busan-logistics-erp.onrender.com/api/inventories?size=1000') 
       .then(response => {
         if (!response.ok) throw new Error('서버 연결 실패');
         return response.json();
