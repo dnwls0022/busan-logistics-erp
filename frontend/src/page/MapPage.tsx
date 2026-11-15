@@ -38,6 +38,10 @@ export default function MapPage() {
   const [isRoadviewFullscreen, setIsRoadviewFullscreen] = useState(false);
   const [showDeliveryRoute, setShowDeliveryRoute] = useState(false);
 
+  // 🔄 삭제 복구(Undo)를 위한 상태 관리
+  const [deletedItem, setDeletedItem] = useState<any>(null);
+  const [undoTimeoutId, setUndoTimeoutId] = useState<any>(null);
+
   const mapInstanceRef = useRef<any>(null);
   const roadviewInstanceRef = useRef<any>(null);
   const roadviewClientRef = useRef<any>(null);
@@ -150,6 +154,7 @@ export default function MapPage() {
     setSelectedBranch(newBranch);
   };
 
+  // 🗑️ 삭제 처리 (10초 복구 타이머 연동)
   const handleDeleteStore = (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
     if (branches.length <= 1) {
@@ -157,13 +162,33 @@ export default function MapPage() {
       return;
     }
 
-    if (confirm('정말 이 장소를 목록에서 삭제하시겠습니까?')) {
-      const updated = branches.filter(b => b.id !== id);
-      setBranches(updated);
-      if (selectedBranch.id === id) {
-        setSelectedBranch(updated[0]);
-      }
+    const target = branches.find(b => b.id === id);
+    if (!target) return;
+
+    const updated = branches.filter(b => b.id !== id);
+    setBranches(updated);
+    if (selectedBranch.id === id) {
+      setSelectedBranch(updated[0]);
     }
+
+    // 삭제된 항목 임시 저장 및 10초 타이머 세팅 (10000ms)
+    setDeletedItem(target);
+    if (undoTimeoutId) clearTimeout(undoTimeoutId);
+
+    const timer = setTimeout(() => {
+      setDeletedItem(null);
+    }, 10000);
+    setUndoTimeoutId(timer);
+  };
+
+  // ↩️ 삭제 되돌리기(복구) 함수
+  const handleUndoDelete = () => {
+    if (!deletedItem) return;
+
+    setBranches(prev => [deletedItem, ...prev]);
+    setSelectedBranch(deletedItem);
+    setDeletedItem(null);
+    if (undoTimeoutId) clearTimeout(undoTimeoutId);
   };
 
   const handleOpenEditModal = (e: React.MouseEvent, branch: any) => {
@@ -430,7 +455,7 @@ export default function MapPage() {
                         </svg>
                       </button>
 
-                      {/* 🛠️ SVG 속성(stroke 등)을 올바르게 채운 삭제 버튼 */}
+                      {/* 🗑️ 휴지통 삭제 버튼 */}
                       <button 
                         type="button" 
                         onClick={(e) => handleDeleteStore(e, branch.id)} 
@@ -438,10 +463,10 @@ export default function MapPage() {
                         title="삭제"
                       >
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></polyline>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></path>
-                          <line x1="10" y1="11" x2="10" y2="17" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></line>
-                          <line x1="14" y1="11" x2="14" y2="17" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></line>
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                          <line x1="10" y1="11" x2="10" y2="17"></line>
+                          <line x1="14" y1="11" x2="14" y2="17"></line>
                         </svg>
                       </button>
                     </div>
@@ -493,6 +518,16 @@ export default function MapPage() {
         </div>
 
       </div>
+
+      {/* ↩️ 삭제 직후 나타나는 10초 유지 되돌리기(Undo) 토스트 팝업 */}
+      {deletedItem && (
+        <div className="undo-toast-banner">
+          <span>🗑️ '{deletedItem.name}' 장소가 삭제되었습니다.</span>
+          <button type="button" onClick={handleUndoDelete} className="undo-action-btn">
+            되돌리기 ↩
+          </button>
+        </div>
+      )}
 
       {isAddModalOpen && (
         <div className="modal-overlay">

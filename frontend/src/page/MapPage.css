@@ -5,6 +5,7 @@
   font-family: sans-serif;
   padding: 24px 32px 40px 32px;
   box-sizing: border-box;
+  position: relative;
 }
 
 .map-header {
@@ -320,6 +321,15 @@
   transition: 0.2s;
 }
 
+.icon-action-btn svg {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  flex-shrink: 0 !important;
+  display: block !important;
+}
+
 .icon-action-btn.edit-btn {
   color: #3e2723;
 }
@@ -330,7 +340,6 @@
   border-color: #5d4037;
 }
 
-/* 🔥 삭제 버튼 스타일 (휴지통 아이콘 색상 및 테두리 완벽 반영) */
 .icon-action-btn.delete-btn {
   color: #c62828;
   background-color: #ffebee;
@@ -444,6 +453,46 @@
 
 .action-button:hover {
   background-color: #3e2723;
+}
+
+/* ↩️ 삭제 되돌리기 토스트 팝업 스타일 */
+.undo-toast-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #3e2723;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  z-index: 2000;
+  font-size: 13px;
+  animation: slide-up 0.2s ease-out;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.undo-action-btn {
+  background-color: #d7ccc8;
+  color: #3e2723;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 12px;
+  transition: 0.2s;
+}
+
+.undo-action-btn:hover {
+  background-color: #fff;
 }
 
 .modal-overlay {

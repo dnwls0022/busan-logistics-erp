@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './InventoryLogPage.css';
 
 interface LogItem {
@@ -12,6 +13,18 @@ interface LogItem {
 }
 
 export default function InventoryLogPage() {
+  const navigate = useNavigate();
+
+  // 🔒 관리자 권한(ADMIN) 체크 (아니면 대시보드로 강제 이동)
+  const userRole = localStorage.getItem('userRole') || 'ADMIN'; // 테스트를 위해 기본값 ADMIN (실제 연동 시 토큰/세션 권한 확인)
+
+  useEffect(() => {
+    if (userRole !== 'ADMIN') {
+      alert('⚠️ 접근 권한이 없습니다. 관리자만 접근할 수 있는 페이지입니다.');
+      navigate('/dashboard');
+    }
+  }, [userRole, navigate]);
+
   const [logs, setLogs] = useState<LogItem[]>([
     { id: 1, date: '2026-11-04 10:30', branch: '부산 서면점', item: '맛있는 버터떡 1', type: '출고', quantity: 50, status: '승인완료' },
     { id: 2, date: '2026-11-04 09:15', branch: '부산 센텀점', item: '스페셜 원두 1kg', type: '입고', quantity: 20, status: '승인대기' },
@@ -21,6 +34,10 @@ export default function InventoryLogPage() {
 
   const [filterType, setFilterType] = useState<'전체' | '입고' | '출고'>('전체');
   const [searchTerm, setSearchTerm] = useState('');
+
+  if (userRole !== 'ADMIN') {
+    return null; // 권한이 없을 경우 렌더링 방지
+  }
 
   const handleStatusChange = (id: number, newStatus: '승인완료' | '반려') => {
     setLogs(logs.map(log => log.id === id ? { ...log, status: newStatus } : log));
@@ -36,7 +53,7 @@ export default function InventoryLogPage() {
   return (
     <div className="scm-container">
       <div className="scm-header">
-        <h2>📦 실시간 입출고 내역 및 SCM 공급망 관리</h2>
+        <h2>📦 실시간 입출고 내역 및 SCM 공급망 관리 (관리자 전용)</h2>
         <p>전국 지점의 물품 이동 히스토리를 추적하고 입출고 승인 상태를 관리합니다.</p>
         <div className="scm-title-line"></div>
       </div>
