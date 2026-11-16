@@ -43,7 +43,7 @@
 
 | 지점 지도 및 로드뷰 기본 | 지점 정보 수정 모달 | 지점 필터 및 경로 조회 |
 | :---: | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/5834bffe-e0a6-450b-b4be-9677c055006f" width="100%" /> | <img src="https://github.com/user-attachments/assets/62d294bb-3596-4aea-b622-43114427a8f2" width="100%" /> | <img src="https://github.com/user-attachments/assets/1c2b3e68-a8e0-4330-9866-2436df61369c" width="100%" /> |
+| <img src="https://github.com/user-attachments/assets/5834bffe-e0a6-450b-b4be-9677c055006f" width="100%" /> | <img src="https://github.com/user-attachments/assets/b84c137f-7a13-4388-9756-ad741fe0ddb8" width="100%" /> | <img src="https://github.com/user-attachments/assets/1c2b3e68-a8e0-4330-9866-2436df61369c" width="100%" /> |
 
 ---
 
@@ -53,7 +53,7 @@
 
 | 실시간 입출고 및 SCM 공급망 관리 | 전국 지점별 물류 배송 스케줄 캘린더 |
 | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/4235fe35-f9b6-4d71-9725-bf3e158907c" width="100%" /> | <img src="https://github.com/user-attachments/assets/a137f49f-4695-40bd-a5e9-e2dfc61b0416" width="100%" /> |
+| <img src="https://github.com/user-attachments/assets/69dddd7d-e730-4cc6-9d00-1c3445298cd8" width="100%" /> | <img src="https://github.com/user-attachments/assets/a137f49f-4695-40bd-a5e9-e2dfc61b0416" width="100%" /> |
 
 ---
 
