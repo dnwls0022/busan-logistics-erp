@@ -33,7 +33,8 @@
 
 | 대시보드 상단 (재고 현황) | 대시보드 중단 (지점별 품목) | 대시보드 하단 (예산 정산) |
 | :---: | :---: | :---: |
-| <img src="(부산 ERP 메인보드 링크)" width="100%" /> | <img src="(부산 ERP 메인보드-1 링크)" width="100%" /> | <img src="(부산 ERP 메인보드-2 링크)" width="100%" /> |
+| <img src="(<img width="1850" height="875" alt="부산 ERP 메인보드" src="https://github.com/user-attachments/assets/1585f25c-04b3-4a27-a552-fe0eac52887d" />
+)" width="100%" /> | <img src="(부산 ERP 메인보드-1 링크)" width="100%" /> | <img src="(부산 ERP 메인보드-2 링크)" width="100%" /> |
 
 ---
 
