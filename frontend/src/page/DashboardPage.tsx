@@ -41,32 +41,112 @@ export default function DashboardPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 50;
 
-  const [userBudget, setUserBudget] = useState<number | ''>('');
-  const [isBudgetLocked, setIsBudgetLocked] = useState<boolean>(false);
-
-  const [cart, setCart] = useState<CartItem[]>([]); 
-  const [orderStatus, setOrderStatus] = useState<'IDLE' | 'PENDING' | 'PREPARING' | 'SHIPPING' | 'COMPLETED'>('IDLE');
-  const [lastOrderSummary, setLastOrderSummary] = useState<string>('');
+  const [userBudget, setUserBudget] = useState<number | ''>(() => {
+    const saved = localStorage.getItem('dashboard_user_budget');
+    return saved !== null ? Number(saved) : '';
+  });
   
-  const [lastOrderedItems, setLastOrderedItems] = useState<OrderedSnapshot[]>([]);
-  const [lastOrderTotalPrice, setLastOrderTotalPrice] = useState<number>(0);
+  const [isBudgetLocked, setIsBudgetLocked] = useState<boolean>(() => {
+    return localStorage.getItem('dashboard_budget_locked') === 'true';
+  });
+
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem('dashboard_cart');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [orderStatus, setOrderStatus] = useState<'IDLE' | 'PENDING' | 'PREPARING' | 'SHIPPING' | 'COMPLETED'>(() => {
+    return (localStorage.getItem('dashboard_order_status') as any) || 'IDLE';
+  });
+  
+  const [lastOrderSummary, setLastOrderSummary] = useState<string>(() => {
+    return localStorage.getItem('dashboard_order_summary') || '';
+  });
+  
+  const [lastOrderedItems, setLastOrderedItems] = useState<OrderedSnapshot[]>(() => {
+    const saved = localStorage.getItem('dashboard_last_ordered_items');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  const [lastOrderTotalPrice, setLastOrderTotalPrice] = useState<number>(() => {
+    const saved = localStorage.getItem('dashboard_last_total_price');
+    return saved ? Number(saved) : 0;
+  });
 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-useEffect(() => {
-    // 💡 Render 백엔드 주소를 통째로 넣어줍니다!
+  // 예산 및 장바구니 상태 로컬 스토리지 동기화
+  useEffect(() => {
+    localStorage.setItem('dashboard_user_budget', userBudget.toString());
+    localStorage.setItem('dashboard_budget_locked', isBudgetLocked.toString());
+  }, [userBudget, isBudgetLocked]);
+
+  useEffect(() => {
+    localStorage.setItem('dashboard_cart', JSON.stringify(cart));
+  }, [cart]);
+
+  useEffect(() => {
+    localStorage.setItem('dashboard_order_status', orderStatus);
+    localStorage.setItem('dashboard_order_summary', lastOrderSummary);
+    localStorage.setItem('dashboard_last_ordered_items', JSON.stringify(lastOrderedItems));
+    localStorage.setItem('dashboard_last_total_price', lastOrderTotalPrice.toString());
+  }, [orderStatus, lastOrderSummary, lastOrderedItems, lastOrderTotalPrice]);
+
+  // 💡 데이터 로드 및 SCM 승인 연동 처리
+  useEffect(() => {
+    const savedInventories = localStorage.getItem('dashboard_inventories');
+    
+    if (savedInventories) {
+      try {
+        const parsed = JSON.parse(savedInventories);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setInventories(parsed);
+        } else {
+          fetchServerInventories();
+        }
+      } catch (e) {
+        fetchServerInventories();
+      }
+    } else {
+      fetchServerInventories();
+    }
+
+    audioRef.current = new Audio('/작은 봄_고추잠자리.mp3');
+    audioRef.current.loop = true;
+  }, []);
+
+  const fetchServerInventories = () => {
     fetch('https://busan-logistics-erp.onrender.com/api/inventories?size=1000') 
       .then(response => {
         if (!response.ok) throw new Error('서버 연결 실패');
         return response.json();
       })
-      .then(data => setInventories(data))
-      .catch(error => console.error("❌ 백엔드 연결 실패:", error));
+      .then(data => {
+        // ✨ 서버에서 가져온 직후 SCM 승인 신호가 있다면 즉시 반영
+        let processedData = data;
+        const approvedRestockStr = localStorage.getItem('scm_approved_restock');
+        if (approvedRestockStr) {
+          try {
+            const restock = JSON.parse(approvedRestockStr);
+            processedData = data.map((inv: InventoryItem) => {
+              const matchStore = inv.store?.name === restock.branch;
+              const matchProd = inv.product?.name?.includes('버터떡');
+              if (matchStore && matchProd) {
+                return { ...inv, quantity: inv.quantity + restock.quantity };
+              }
+              return inv;
+            });
+          } catch (e) {
+            console.error(e);
+          }
+        }
 
-    audioRef.current = new Audio('/작은 봄_고추잠자리.mp3');
-    audioRef.current.loop = true;
-  }, []);
+        setInventories(processedData);
+        localStorage.setItem('dashboard_inventories', JSON.stringify(processedData));
+      })
+      .catch(error => console.error("❌ 백엔드 연결 실패:", error));
+  };
 
   const toggleMusic = () => {
     if (!audioRef.current) return;
@@ -115,11 +195,10 @@ useEffect(() => {
     }));
   };
 
-  // ✍️ 사용자가 장바구니 수량 인풋창에 직접 숫자를 입력할 때 실행되는 함수
   const setCartDirectQuantity = (inventoryId: number, value: number | string) => {
     setCart(prevCart => prevCart.map(c => {
       if (c.inventoryId === inventoryId) {
-        if (value === '') return { ...c, orderQuantity: 1 }; // 비어있을 때는 임시로 1
+        if (value === '') return { ...c, orderQuantity: 1 };
         const num = Number(value);
         if (num > c.maxAvailable) {
           alert(`재고 부족! 최대 ${c.maxAvailable}개까지만 담을 수 있습니다.`);
@@ -151,36 +230,24 @@ useEffect(() => {
       return;
     }
     if (isOverBudget) {
-      alert(`가용 예산이 ${Math.abs(changeMoney).toLocaleString()}원 초과되었습니다. 수량을 줄이거나 예산을 증액해주세요.`);
+      alert(`가용 예산이 ${Math.abs(changeMoney).toLocaleString()}원 초과되었습니다.`);
       return;
-    }
-
-    try {
-      await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: cart,
-          totalPrice: totalCartPrice,
-          status: 'PENDING'
-        })
-      });
-    } catch (e) {
-      console.warn('백엔드 주문 API 미연결 상태 - 프론트엔드 상태로 즉시 반영합니다.');
     }
 
     setLastOrderedItems(cart.map(c => ({ inventoryId: c.inventoryId, quantity: c.orderQuantity })));
     setLastOrderTotalPrice(totalCartPrice);
 
-    setInventories(prev =>
-      prev.map(inv => {
+    setInventories(prev => {
+      const updated = prev.map(inv => {
         const orderedItem = cart.find(c => c.inventoryId === inv.id);
         if (orderedItem) {
           return { ...inv, quantity: Math.max(0, inv.quantity - orderedItem.orderQuantity) };
         }
         return inv;
-      })
-    );
+      });
+      localStorage.setItem('dashboard_inventories', JSON.stringify(updated));
+      return updated;
+    });
 
     setUserBudget(prev => (typeof prev === 'number' ? prev - totalCartPrice : ''));
     setLastOrderSummary(`총 ${cart.length}건 (${totalCartPrice.toLocaleString()}원)`);
@@ -193,15 +260,17 @@ useEffect(() => {
   const handleCancelOrder = () => {
     if (!window.confirm('정말 발주를 취소하시겠습니까? 예산과 재고가 원래대로 복구됩니다.')) return;
 
-    setInventories(prev =>
-      prev.map(inv => {
+    setInventories(prev => {
+      const updated = prev.map(inv => {
         const restored = lastOrderedItems.find(item => item.inventoryId === inv.id);
         if (restored) {
           return { ...inv, quantity: inv.quantity + restored.quantity };
         }
         return inv;
-      })
-    );
+      });
+      localStorage.setItem('dashboard_inventories', JSON.stringify(updated));
+      return updated;
+    });
 
     setUserBudget(prev => (typeof prev === 'number' ? prev + lastOrderTotalPrice : lastOrderTotalPrice));
 
@@ -209,6 +278,10 @@ useEffect(() => {
     setLastOrderSummary('');
     setLastOrderedItems([]);
     setLastOrderTotalPrice(0);
+    localStorage.removeItem('dashboard_order_status');
+    localStorage.removeItem('dashboard_order_summary');
+    localStorage.removeItem('dashboard_last_ordered_items');
+    localStorage.removeItem('dashboard_last_total_price');
     alert('발주가 취소되었으며, 예산과 재고가 원래 상태로 복구되었습니다.');
   };
 
@@ -223,6 +296,10 @@ useEffect(() => {
       setLastOrderSummary('');
       setLastOrderedItems([]);
       setLastOrderTotalPrice(0);
+      localStorage.removeItem('dashboard_order_status');
+      localStorage.removeItem('dashboard_order_summary');
+      localStorage.removeItem('dashboard_last_ordered_items');
+      localStorage.removeItem('dashboard_last_total_price');
     }
   };
 
@@ -258,19 +335,7 @@ useEffect(() => {
         <div className="cafe-title-line"></div>
       </div>
 
-      <div style={{
-        backgroundColor: '#FFF3CD',
-        border: '1px solid #FFEEBA',
-        color: '#856404',
-        padding: '12px 20px',
-        borderRadius: '8px',
-        marginBottom: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        fontWeight: 'bold',
-        fontSize: '14px'
-      }}>
+      <div className="alert-banner">
         <span>🚨 [긴급 물류 알림]</span>
         <span>현재 전국 매장 중 재고 부족(안전재고 60개 이하) 품목이 총 <strong>{lowStockCount}건</strong> 있습니다. 즉시 발주를 검토하세요.</span>
       </div>
@@ -302,23 +367,8 @@ useEffect(() => {
             {currentItems.map((item) => {
               const isLowStock = item.quantity > 0 && item.quantity <= 60;
               return (
-                <div key={item.id} className="product-card" style={{ position: 'relative' }}>
-                  {isLowStock && (
-                    <span style={{
-                      position: 'absolute',
-                      top: '12px',
-                      right: '12px',
-                      backgroundColor: '#DC3545',
-                      color: '#FFF',
-                      fontSize: '11px',
-                      padding: '3px 8px',
-                      borderRadius: '12px',
-                      fontWeight: 'bold',
-                      zIndex: 2
-                    }}>
-                      긴급 발주 필요
-                    </span>
-                  )}
+                <div key={item.id} className="product-card">
+                  {isLowStock && <span className="urgent-badge">긴급 발주 필요</span>}
 
                   <div className="card-top-line"></div>
                   <div className="card-body">
@@ -343,15 +393,10 @@ useEffect(() => {
             
             <div className="page-info inline-flex-center">
               <input 
-                type="number" 
-                min={1} 
-                max={totalPages} 
-                value={currentPage}
+                type="number" min={1} max={totalPages} value={currentPage}
                 onChange={(e) => {
                   const page = Number(e.target.value);
-                  if (page >= 1 && page <= totalPages) {
-                    setCurrentPage(page);
-                  }
+                  if (page >= 1 && page <= totalPages) setCurrentPage(page);
                 }}
                 className="page-input-box"
               />
@@ -366,46 +411,33 @@ useEffect(() => {
           <div className="receipt-title">📋 CAFE INTEGRATED BILL</div>
           
           <div className="budget-section-wrap">
-            <label className="budget-label" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <label className="budget-label">
               <span>💵 통합 가용 예산 설정</span>
-              <span style={{ fontSize: '11px', fontWeight: 'normal', color: '#8D7967' }}>
-                원하는 금액을 입력하세요
-              </span>
+              <span className="budget-sub-text">원하는 금액을 입력하세요</span>
             </label>
 
-            <div style={{ display: 'flex', gap: '6px' }}>
+            <div className="budget-input-group">
               <input 
-                type="number" 
-                className="budget-input-box" 
-                placeholder="예: 300000"
-                value={userBudget} 
-                disabled={isBudgetLocked}
-                style={{ backgroundColor: isBudgetLocked ? '#F0EFEA' : '#FFFFFF', flex: 1 }}
+                type="number" className="budget-input-box" placeholder="예: 300000"
+                value={userBudget} disabled={isBudgetLocked}
+                style={{ backgroundColor: isBudgetLocked ? '#F0EFEA' : '#FFFFFF' }}
                 onChange={(e) => {
                   const val = e.target.value;
                   setUserBudget(val === '' ? '' : Number(val));
                 }} 
               />
               {!isBudgetLocked ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (userBudget === '' || userBudget <= 0) {
-                      alert('유효한 예산 금액을 입력해주세요.');
-                      return;
-                    }
-                    setIsBudgetLocked(true);
-                  }}
-                  style={{ backgroundColor: '#4A3B32', color: '#FFF', border: 'none', padding: '0 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                >
+                <button type="button" className="budget-action-btn complete" onClick={() => {
+                  if (userBudget === '' || userBudget <= 0) {
+                    alert('유효한 예산 금액을 입력해주세요.');
+                    return;
+                  }
+                  setIsBudgetLocked(true);
+                }}>
                   입력 완료
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsBudgetLocked(false)}
-                  style={{ backgroundColor: '#8D7967', color: '#FFF', border: 'none', padding: '0 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                >
+                <button type="button" className="budget-action-btn edit" onClick={() => setIsBudgetLocked(false)}>
                   금액 수정
                 </button>
               )}
@@ -422,26 +454,11 @@ useEffect(() => {
                   </div>
                   <div className="cart-item-control">
                     <button className="cart-btn-mini" onClick={() => updateCartQuantity(c.inventoryId, -1)}>-</button>
-                    
-                    {/* ✨ 파란색으로 표시하셨던 수량 표시 영역을 직접 입력 가능한 인풋창으로 교체 */}
                     <input
-                      type="number"
-                      min={1}
-                      max={c.maxAvailable}
-                      value={c.orderQuantity}
+                      type="number" min={1} max={c.maxAvailable} value={c.orderQuantity}
                       onChange={(e) => setCartDirectQuantity(c.inventoryId, e.target.value)}
-                      style={{
-                        width: '40px',
-                        textAlign: 'center',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        padding: '2px',
-                        border: '1px solid #C8B7A6',
-                        borderRadius: '4px',
-                        backgroundColor: '#FFFFFF'
-                      }}
+                      className="cart-input-qty"
                     />
-
                     <button className="cart-btn-mini" onClick={() => updateCartQuantity(c.inventoryId, 1)}>+</button>
                     <button className="cart-btn-delete" onClick={() => removeFromCart(c.inventoryId)}>X</button>
                   </div>
@@ -454,113 +471,42 @@ useEffect(() => {
             <div className="summary-row"><span>총 예상 소요 비용</span><strong>{totalCartPrice.toLocaleString()} 원</strong></div>
             <div className="summary-row total">
               <span>{isOverBudget ? '💸 예산 초과' : '🪙 예산 잔액'}</span>
-              <span style={{ color: isOverBudget ? '#d32f2f' : '#2e7d32' }}>{Math.abs(changeMoney).toLocaleString()} 원</span>
+              <span className={isOverBudget ? 'text-over' : 'text-normal'}>{Math.abs(changeMoney).toLocaleString()} 원</span>
             </div>
 
             <button 
-              className="btn-select" 
-              style={{ width: '100%', marginTop: '12px', backgroundColor: isOverBudget ? '#9E9E9E' : '#4A3B32', color: '#FFF' }}
+              className={`btn-select order-submit-btn ${isOverBudget ? 'disabled' : ''}`}
               onClick={handleOrder}
             >
               본사 발주 신청하기 🚀
             </button>
 
             {orderStatus !== 'IDLE' && (
-              <div style={{
-                marginTop: '12px',
-                padding: '10px',
-                backgroundColor: '#F8F9FA',
-                border: '1px solid #EAE3D9',
-                borderRadius: '8px'
-              }}>
-                <div style={{ fontSize: '11px', color: '#8D7967', marginBottom: '6px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
+              <div className="pipeline-container">
+                <div className="pipeline-header">
                   <span>📦 진행 중인 발주 ({lastOrderSummary})</span>
                 </div>
 
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  gap: '4px',
-                  fontSize: '11px',
-                  textAlign: 'center'
-                }}>
-                  <div 
-                    onClick={() => setOrderStatus('PENDING')}
-                    style={{ flex: 1, padding: '6px 4px', borderRadius: '4px', cursor: 'pointer', backgroundColor: orderStatus === 'PENDING' ? '#4A3B32' : '#EAE3D9', color: orderStatus === 'PENDING' ? '#FFF' : '#555', fontWeight: 'bold' }}
-                  >
-                    결재 대기
-                  </div>
-                  <div 
-                    onClick={() => setOrderStatus('PREPARING')}
-                    style={{ flex: 1, padding: '6px 4px', borderRadius: '4px', cursor: 'pointer', backgroundColor: orderStatus === 'PREPARING' ? '#4A3B32' : '#EAE3D9', color: orderStatus === 'PREPARING' ? '#FFF' : '#555', fontWeight: 'bold' }}
-                  >
-                    출고 준비
-                  </div>
-                  <div 
-                    onClick={() => setOrderStatus('SHIPPING')}
-                    style={{ flex: 1, padding: '6px 4px', borderRadius: '4px', cursor: 'pointer', backgroundColor: orderStatus === 'SHIPPING' ? '#4A3B32' : '#EAE3D9', color: orderStatus === 'SHIPPING' ? '#FFF' : '#555', fontWeight: 'bold' }}
-                  >
-                    배송 중
-                  </div>
+                <div className="pipeline-steps">
+                  <div onClick={() => setOrderStatus('PENDING')} className={`pipeline-step ${orderStatus === 'PENDING' ? 'active' : ''}`}>결재 대기</div>
+                  <div onClick={() => setOrderStatus('PREPARING')} className={`pipeline-step ${orderStatus === 'PREPARING' ? 'active' : ''}`}>출고 준비</div>
+                  <div onClick={() => setOrderStatus('SHIPPING')} className={`pipeline-step ${orderStatus === 'SHIPPING' ? 'active' : ''}`}>배송 중</div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
-                  <button
-                    type="button"
-                    onClick={handleAdvancePipeline}
-                    style={{
-                      flex: 2,
-                      padding: '6px',
-                      backgroundColor: '#795548',
-                      color: '#FFF',
-                      border: 'none',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {orderStatus === 'PENDING' && '✅ 결재 승인 (출고 준비로 전환) ▶'}
-                    {orderStatus === 'PREPARING' && '🚚 상차 완료 (배송 중으로 전환) ▶'}
-                    {orderStatus === 'SHIPPING' && '🏁 지점 입고 완료 처리'}
+                <div className="pipeline-actions">
+                  <button type="button" onClick={handleAdvancePipeline} className="pipeline-advance-btn">
+                    {orderStatus === 'PENDING' && '✅ 결재 승인 ▶'}
+                    {orderStatus === 'PREPARING' && '🚚 상차 완료 ▶'}
+                    {orderStatus === 'SHIPPING' && '🏁 지점 입고 완료'}
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={handleCancelOrder}
-                    style={{
-                      flex: 1,
-                      padding: '6px',
-                      backgroundColor: '#D32F2F',
-                      color: '#FFF',
-                      border: 'none',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
+                  <button type="button" onClick={handleCancelOrder} className="pipeline-cancel-btn">
                     발주 취소 ❌
                   </button>
                 </div>
               </div>
             )}
 
-            <button 
-              style={{
-                width: '100%',
-                backgroundColor: '#6C757D',
-                color: '#FFF',
-                border: 'none',
-                padding: '10px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                marginTop: '10px',
-                fontSize: '12px',
-                fontWeight: 'bold'
-              }}
-              onClick={() => navigate('/map')}
-            >
+            <button className="map-move-btn" onClick={() => navigate('/map')}>
               🗺️ 실시간 배송 경로 지도 보기
             </button>
           </div>

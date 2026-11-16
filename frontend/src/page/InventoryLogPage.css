@@ -31,6 +31,99 @@
   border-radius: 2px;
 }
 
+/* 🔒 지점 관리자 인증 팝업 화면 */
+.scm-auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.scm-auth-card {
+  background: #fff;
+  padding: 40px;
+  border-radius: 14px;
+  border: 1px solid #ebdccb;
+  box-shadow: 0 4px 20px rgba(78, 54, 41, 0.08);
+  width: 400px;
+  text-align: center;
+}
+
+.scm-auth-title {
+  margin: 0 0 10px 0;
+  color: #4e3629;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.scm-auth-desc {
+  font-size: 14px;
+  color: #8d7967;
+  margin: 0 0 22px 0;
+}
+
+.scm-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scm-auth-input {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #ebdccb;
+  background-color: #faf6f0;
+  color: #4e3629;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.scm-auth-input:focus {
+  border-color: #c7a75c;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(199, 167, 92, 0.15);
+}
+
+.scm-auth-error {
+  color: #d32f2f;
+  font-size: 12px;
+  margin: 2px 0 0 0;
+  font-weight: bold;
+}
+
+.scm-auth-submit-btn {
+  padding: 12px;
+  background: #4e3629;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.scm-auth-submit-btn:hover {
+  background: #3a271d;
+}
+
+.scm-auth-back-btn {
+  background: transparent;
+  border: none;
+  color: #8d7967;
+  margin-top: 16px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.scm-auth-back-btn:hover {
+  text-decoration: underline;
+  color: #4e3629;
+}
+
 /* 🔍 필터 및 검색 바 영역 */
 .scm-filter-bar {
   display: flex;
@@ -97,6 +190,14 @@
   box-shadow: 0 4px 20px rgba(78, 54, 41, 0.03);
 }
 
+.scm-guide-banner {
+  background: #faf6f0;
+  padding: 12px 18px;
+  font-size: 13px;
+  color: #4e3629;
+  border-bottom: 1px solid #ebdccb;
+}
+
 .scm-table {
   width: 100%;
   border-collapse: collapse;
@@ -127,10 +228,11 @@
 /* 🔠 공통 유틸리티 클래스 */
 .fw-bold { font-weight: bold; }
 .text-muted { color: #8d7967; }
+.text-danger { color: #d32f2f; }
 .small { font-size: 12px; }
 .text-center { text-align: center; }
 
-/* 🏷️ 입고/출고 뱃지 */
+/* 🏷️ 입고/출고 및 가격 등급 뱃지 */
 .badge-type {
   padding: 4px 10px;
   border-radius: 6px;
@@ -139,6 +241,32 @@
 }
 .badge-type.in { background: #e8f5e9; color: #2e7d32; }
 .badge-type.out { background: #fff3e0; color: #e65100; }
+.badge-type.price-high { background: #ffebee; color: #c62828; }
+.badge-type.price-mid { background: #fff8e1; color: #f57f17; }
+.badge-type.price-low { background: #e3f2fd; color: #1565c0; }
+
+/* ⏳ SCM 타이머 및 발주 시작 버튼 */
+.timer-active {
+  color: #d32f2f;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.btn-order-start {
+  padding: 6px 12px;
+  background: #c7a75c;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: background-color 0.15s;
+}
+
+.btn-order-start:hover {
+  background: #b09149;
+}
 
 /* 🚦 처리 상태 텍스트 */
 .status-text {

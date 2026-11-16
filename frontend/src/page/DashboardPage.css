@@ -37,6 +37,21 @@
   border-radius: 2px;
 }
 
+/* 긴급 물류 알림 배너 */
+.alert-banner {
+  background-color: #FFF3CD;
+  border: 1px solid #FFEEBA;
+  color: #856404;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
 /* 우측 음악 플레이어 영역 */
 .music-player-zone {
   position: absolute;
@@ -152,6 +167,20 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
+}
+
+.urgent-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: #DC3545;
+  color: #FFF;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+  z-index: 2;
 }
 
 .card-top-line {
@@ -295,9 +324,23 @@
 }
 
 .budget-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   font-size: 12px;
   font-weight: bold;
   color: #8D7967;
+}
+
+.budget-sub-text {
+  font-size: 11px;
+  font-weight: normal;
+  color: #8D7967;
+}
+
+.budget-input-group {
+  display: flex;
+  gap: 6px;
 }
 
 .budget-input-box {
@@ -309,6 +352,26 @@
   font-weight: bold;
   color: #4A3B32;
   box-sizing: border-box;
+  flex: 1;
+}
+
+.budget-action-btn {
+  border: none;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #FFF;
+}
+
+.budget-action-btn.complete {
+  background-color: #4A3B32;
+}
+
+.budget-action-btn.edit {
+  background-color: #8D7967;
 }
 
 .cart-list {
@@ -365,9 +428,15 @@
   font-size: 12px;
 }
 
-.cart-quantity-text {
-  font-size: 13px;
+.cart-input-qty {
+  width: 40px;
+  text-align: center;
+  font-size: 12px;
   font-weight: bold;
+  padding: 2px;
+  border: 1px solid #C8B7A6;
+  border-radius: 4px;
+  background-color: #FFFFFF;
 }
 
 .cart-btn-delete {
@@ -403,33 +472,105 @@
   border-top: 1px solid #F7F5F0;
 }
 
-/* 💡 첨부파일 다운로드 클릭 인터랙션 CSS */
-.attachment-item.clickable {
+.text-over {
+  color: #d32f2f;
+}
+
+.text-normal {
+  color: #2e7d32;
+}
+
+.order-submit-btn {
+  width: 100%;
+  margin-top: 12px;
+  background-color: #4A3B32;
+  color: #FFF;
+}
+
+.order-submit-btn.disabled {
+  background-color: #9E9E9E;
+}
+
+/* 발주 진행 파이프라인 영역 */
+.pipeline-container {
+  margin-top: 12px;
+  padding: 10px;
+  background-color: #F8F9FA;
+  border: 1px solid #EAE3D9;
+  border-radius: 8px;
+}
+
+.pipeline-header {
+  font-size: 11px;
+  color: #8D7967;
+  margin-bottom: 6px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+}
+
+.pipeline-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 11px;
+  text-align: center;
+}
+
+.pipeline-step {
+  flex: 1;
+  padding: 6px 4px;
+  border-radius: 4px;
   cursor: pointer;
-  padding: 6px 12px;
+  background-color: #EAE3D9;
+  color: #555;
+  font-weight: bold;
+}
+
+.pipeline-step.active {
+  background-color: #4A3B32;
+  color: #FFF;
+}
+
+.pipeline-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.pipeline-advance-btn {
+  flex: 2;
+  padding: 6px;
+  background-color: #795548;
+  color: #FFF;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.pipeline-cancel-btn {
+  flex: 1;
+  padding: 6px;
+  background-color: #D32F2F;
+  color: #FFF;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.map-move-btn {
+  width: 100%;
+  background-color: #6C757D;
+  color: #FFF;
+  border: none;
+  padding: 10px;
   border-radius: 6px;
-  background-color: #FFFFFF;
-  border: 1px solid #E5E7EB;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  width: fit-content;
-}
-
-.attachment-item.clickable:hover {
-  background-color: #F3F4F6;
-  border-color: #2563EB;
-  color: #2563EB;
-}
-
-.file-name-text {
-  font-weight: 600;
-  color: #2563EB;
-  text-decoration: underline;
-}
-
-.download-icon {
-  color: #2563EB;
-  margin-left: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  fontSize: 12px;
+  font-weight: bold;
 }
