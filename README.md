@@ -31,9 +31,20 @@
 * **실시간 재고 집계 및 안전재고 경고:** 출고 가능 총 재고와 지점별 보유고를 실시간 조회하며, 안전재고(60개 이하) 미만 품목에 대해 **긴급 발주 필요** 배지 및 상단 알림을 제공합니다.
 * **가용 예산 연동 발주 계산기 (CAFE INTEGRATED BILL):** 가용 예산을 설정하면 장바구니에 담은 품목의 총 예상 소요 비용과 잔액을 자동 계산하여 본사 발주 신청까지 원스톱으로 처리합니다.
 
-| 대시보드 상단 (재고 현황) | 대시보드 중단 (지점별 품목) | 대시보드 하단 (예산 정산) |
-| :---: | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/019f4864-0265-4c9e-9c78-8050cecbab81" width="100%" /> | <img src="https://github.com/user-attachments/assets/f4cfc02e-3a8f-4c5e-ba36-3d98369063ab" width="100%" /> | <img src="https://github.com/user-attachments/assets/b8d32ad2-ca84-4ab3-bbdf-307692ecc66a" width="100%" /> |
+**[대시보드 상단 - 재고 현황]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/019f4864-0265-4c9e-9c78-8050cecbab81" width="100%" />
+</div>
+
+**[대시보드 중단 - 지점별 품목]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/f4cfc02e-3a8f-4c5e-ba36-3d98369063ab" width="100%" />
+</div>
+
+**[대시보드 하단 - 예산 정산 및 발주]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/b8d32ad2-ca84-4ab3-bbdf-307692ecc66a" width="100%" />
+</div>
 
 ---
 
@@ -41,9 +52,20 @@
 * **거점 위치 및 운영 상태 시각화:** 부산 주요 가맹점(서면, 광안리, 해운대, 남포동 등)의 정상 영업·혼잡·점검 상태를 필터링하고 지도 마커 및 경로와 연동합니다.
 * **실시간 거리뷰(RoadView) & 정보 수정 모달:** 선택한 지점의 주변 도로 환경을 로드뷰로 즉시 확인하며, 지점명 및 도로명 주소를 모달 창에서 실시간으로 수정·관리할 수 있습니다.
 
-| 지점 지도 및 로드뷰 기본 | 지점 정보 수정 모달 | 지점 필터 및 경로 조회 |
-| :---: | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/5834bffe-e0a6-450b-b4be-9677c055006f" width="100%" /> | <img src="https://github.com/user-attachments/assets/b84c137f-7a13-4388-9756-ad741fe0ddb8" width="100%" /> | <img src="https://github.com/user-attachments/assets/1c2b3e68-a8e0-4330-9866-2436df61369c" width="100%" /> |
+**[지점 지도 및 로드뷰 기본]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/5834bffe-e0a6-450b-b4be-9677c055006f" width="100%" />
+</div>
+
+**[지점 정보 수정 모달]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/b84c137f-7a13-4388-9756-ad741fe0ddb8" width="100%" />
+</div>
+
+**[지점 필터 및 경로 조회]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/1c2b3e68-a8e0-4330-9866-2436df61369c" width="100%" />
+</div>
 
 ---
 
@@ -51,9 +73,15 @@
 * **입출고 히스토리 추적 및 승인 프로세스 (관리자 전용):** 지점별 입고·출고 요청 내역을 필터링하고, 관리자가 대기 중인 요청을 즉시 **승인**하거나 **반려**하여 데이터 정합성을 유지합니다.
 * **물류 배송 일정 캘린더:** 월별 캘린더를 통해 날짜별 배송 차량 배차 현황 및 지점 휴무일·방역일 등 특이사항을 등록·수정합니다.
 
-| 실시간 입출고 및 SCM 공급망 관리 | 전국 지점별 물류 배송 스케줄 캘린더 |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/69dddd7d-e730-4cc6-9d00-1c3445298cd8" width="100%" /> | <img src="https://github.com/user-attachments/assets/a137f49f-4695-40bd-a5e9-e2dfc61b0416" width="100%" /> |
+**[실시간 입출고 및 SCM 공급망 관리]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/69dddd7d-e730-4cc6-9d00-1c3445298cd8" width="100%" />
+</div>
+
+**[전국 지점별 물류 배송 스케줄 캘린더]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/a137f49f-4695-40bd-a5e9-e2dfc61b0416" width="100%" />
+</div>
 
 ---
 
@@ -61,13 +89,35 @@
 * **지점 소통 커뮤니티:** 공지사항 상단 고정, 카테고리별 게시글 조회, 대댓글 소통, 파일/이미지 첨부 및 삭제 예외 처리 기능을 제공합니다.
 * **마이페이지 & 업무 바로가기:** 접속 계정의 소속 지점과 담당 권한을 확인하고, 주요 업무 메뉴로 빠르게 이동할 수 있습니다.
 
-| 커뮤니티 목록 | 게시글 상세 및 삭제 알림 | 댓글 및 대댓글 소통 | 새 게시글 작성 |
-| :---: | :---: | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/bcf4c73d-45be-43a5-9c15-4b30741a0a75" width="100%" /> | <img src="https://github.com/user-attachments/assets/9cb6e7bd-54aa-4d32-8362-32541d742a8a" width="100%" /> | <img src="https://github.com/user-attachments/assets/5c092462-f9d9-42ce-b5f0-23c4418128c7" width="100%" /> | <img src="https://github.com/user-attachments/assets/510c51f7-8fbf-4ac4-86ad-6454dc702556" width="100%" /> |
+**[커뮤니티 목록]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/bcf4c73d-45be-43a5-9c15-4b30741a0a75" width="100%" />
+</div>
 
-| 마이페이지 (계정 정보) | 마이페이지 (업무 바로가기) |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/9322b511-a01f-484f-8eb2-d57d21f87358" width="100%" /> | <img src="https://github.com/user-attachments/assets/617b4198-104d-4d0a-bcf2-83e9297600b0" width="100%" /> |
+**[게시글 상세 및 삭제 알림]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/9cb6e7bd-54aa-4d32-8362-32541d742a8a" width="100%" />
+</div>
+
+**[댓글 및 대댓글 소통]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/5c092462-f9d9-42ce-b5f0-23c4418128c7" width="100%" />
+</div>
+
+**[새 게시글 작성]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/510c51f7-8fbf-4ac4-86ad-6454dc702556" width="100%" />
+</div>
+
+**[마이페이지 - 계정 정보]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/9322b511-a01f-484f-8eb2-d57d21f87358" width="100%" />
+</div>
+
+**[마이페이지 - 업무 바로가기]**
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/617b4198-104d-4d0a-bcf2-83e9297600b0" width="100%" />
+</div>
 
 ---
 
