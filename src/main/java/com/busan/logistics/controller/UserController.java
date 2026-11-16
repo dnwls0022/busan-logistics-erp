@@ -60,6 +60,42 @@ public class UserController {
                 .orElse(ResponseEntity.badRequest().body("존재하지 않는 이메일입니다."));
     }
 
+    // ==========================================
+    // 🛡️ [추가] 지점 관리자 전용 로그인 API (4자리 코드 & ADMIN 권한 검증)
+    // ==========================================
+    @PostMapping("/login/admin")
+    public ResponseEntity<?> adminLogin(@RequestBody Map<String, String> loginData) {
+        String email = loginData.get("email");
+        String password = loginData.get("password");
+        String adminCode = loginData.get("adminCode");
+
+        // 1. 관리자 보안 코드 4자리 검증 (여기서 원하는 코드로 변경 가능: 현재 '7328')
+        if (!"7328".equals(adminCode)) {
+            return ResponseEntity.badRequest().body("관리자 보안 코드가 일치하지 않습니다. (올바른 4자리 코드를 입력해주세요)");
+        }
+
+        return userRepository.findByEmail(email)
+                .map(user -> {
+                    // 2. 계정 활성화 상태 확인
+                    if ("승인거절".equals(user.getStatus()) || "DEACTIVATED".equals(user.getStatus())) {
+                        return ResponseEntity.badRequest().body("계정이 비활성화되었습니다.");
+                    }
+
+                    // 3. 비밀번호 일치 확인
+                    if (user.getPassword() == null || !user.getPassword().equals(password)) {
+                        return ResponseEntity.badRequest().body("아이디 또는 비밀번호가 일치하지 않습니다.");
+                    }
+
+                    // 4. [핵심] DB 권한이 ADMIN인지 확인 (일반 계정이 관리자 탭으로 들어오는 것 원천 차단)
+                    if (!"ADMIN".equals(user.getRole())) {
+                        return ResponseEntity.status(403).body("지점 관리자 권한이 없는 계정입니다. [일반 사용자] 탭을 이용해주세요.");
+                    }
+
+                    return ResponseEntity.ok(user);
+                })
+                .orElse(ResponseEntity.badRequest().body("존재하지 않는 관리자 이메일입니다."));
+    }
+
     // 관리자 페이지용 사용자 상태 변경 API
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> request) {
