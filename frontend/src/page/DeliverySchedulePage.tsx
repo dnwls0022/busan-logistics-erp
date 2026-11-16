@@ -34,6 +34,42 @@ export default function DeliverySchedulePage() {
   const firstDayOfWeek = new Date(selectedYear, selectedMonth - 1, 1).getDay();
   const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
 
+  // 대한민국 주요 고정 및 주요 공휴일 판별 함수 (음력 변환 근사치 또는 고정일 포함)
+  const getHolidayName = (year: number, month: number, day: number): string | null => {
+    const mm = String(month).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    const md = `${mm}-${dd}`;
+
+    // 1. 고정 양력 공휴일
+    const fixedHolidays: { [key: string]: string } = {
+      '01-01': '신정',
+      '03-01': '삼일절',
+      '05-05': '어린이날',
+      '06-06': '현충일',
+      '08-15': '광복절',
+      '10-03': '개천절',
+      '10-09': '한글날',
+      '12-25': '성탄절',
+    };
+
+    if (fixedHolidays[md]) {
+      return fixedHolidays[md];
+    }
+
+    // 2. 2026년 기준 주요 음력 명절(설날, 부처님오신날, 추석) 날짜 매핑 예시
+    if (year === 2026) {
+      if (md === '02-16' || md === '02-17' || md === '02-18') return '설날 연휴';
+      if (md === '05-24') return '부처님오신날';
+      if (md === '09-24' || md === '09-25' || md === '09-26') return '추석 연휴';
+    } else if (year === 2025) {
+      if (md === '01-28' || md === '01-29' || md === '01-30') return '설날 연휴';
+      if (md === '05-05') return '어린이날/부처님';
+      if (md === '10-05' || md === '10-06' || md === '10-07') return '추석 연휴';
+    }
+
+    return null;
+  };
+
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newNote) return;
@@ -133,9 +169,15 @@ export default function DeliverySchedulePage() {
           </div>
 
           <div className="calendar-grid">
-            {['일', '월', '화', '수', '목', '금', '토'].map((w: string, idx: number) => (
-              <div key={idx} className="calendar-weekday">{w}</div>
-            ))}
+            {/* 요일 헤더 (일요일 빨간색, 토요일 파란색) */}
+            {['일', '월', '화', '수', '목', '금', '토'].map((w: string, idx: number) => {
+              let headerClass = "calendar-weekday";
+              if (idx === 0) headerClass += " sun-weekday";
+              if (idx === 6) headerClass += " sat-weekday";
+              return (
+                <div key={idx} className={headerClass}>{w}</div>
+              );
+            })}
 
             {Array.from({ length: firstDayOfWeek }).map((_, idx) => (
               <div key={`empty-${idx}`} className="calendar-day empty"></div>
@@ -147,16 +189,32 @@ export default function DeliverySchedulePage() {
               const formattedDay = String(dayNum).padStart(2, '0');
               const fullDateStr = `${selectedYear}-${formattedMonth}-${formattedDay}`;
 
+              // 요일 계산 (0: 일요일, 6: 토요일)
+              const currentDayOfWeek = new Date(selectedYear, selectedMonth - 1, dayNum).getDay();
+              const holidayName = getHolidayName(selectedYear, selectedMonth, dayNum);
+
               const hasEvent = schedules.some((s: ScheduleItem) => s.date === fullDateStr);
               const isSelected = selectedDate === fullDateStr;
+
+              // 클래스 동적 할당 (일요일 또는 공휴일은 빨간색, 토요일은 파란색)
+              let dayClass = "calendar-day";
+              if (isSelected) dayClass += " selected";
+              if (hasEvent) dayClass += " has-event";
+              if (currentDayOfWeek === 0 || holidayName) {
+                dayClass += " sun-date"; // 빨간색 날짜
+              } else if (currentDayOfWeek === 6) {
+                dayClass += " sat-date"; // 파란색 날짜
+              }
 
               return (
                 <div
                   key={dayNum}
                   onClick={() => handleDayClick(dayNum)}
-                  className={`calendar-day ${isSelected ? 'selected' : ''} ${hasEvent ? 'has-event' : ''}`}
+                  className={dayClass}
+                  title={holidayName ? holidayName : ''}
                 >
                   <span className="day-number">{dayNum}</span>
+                  {holidayName && <span className="holiday-label">{holidayName}</span>}
                   {hasEvent && <span className="event-dot"></span>}
                 </div>
               );

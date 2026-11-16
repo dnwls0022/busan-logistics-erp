@@ -341,3 +341,40 @@
 .form-submit-btn:hover {
   background: #6b4e3d;
 }
+
+/* 요일 헤더 색상 */
+.calendar-weekday.sun-weekday {
+  color: #e53e3e;
+  font-weight: bold;
+}
+.calendar-weekday.sat-weekday {
+  color: #3182ce;
+  font-weight: bold;
+}
+
+/* 일요일 및 공휴일 날짜 */
+.calendar-day.sun-date .day-number {
+  color: #e53e3e !important;
+  font-weight: bold;
+}
+
+/* 토요일 날짜 */
+.calendar-day.sat-date .day-number {
+  color: #3182ce !important;
+  font-weight: bold;
+}
+
+/* 캘린더 내부 공휴일 텍스트 라벨 */
+.holiday-label {
+  display: block;
+  font-size: 9px;
+  color: #e53e3e;
+  background-color: #fff5f5;
+  border-radius: 2px;
+  padding: 1px 2px;
+  margin-top: 2px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
