@@ -1,4 +1,3 @@
-![Uploading 부산 ERP 맵.png…]()
 <div align="center">
 
 # ☕ 부산 디저트 카페 통합 물류 ERP (CAFE LOGISTICS ERP)
@@ -34,8 +33,7 @@
 
 | 대시보드 상단 (재고 현황) | 대시보드 중단 (지점별 품목) | 대시보드 하단 (예산 정산) |
 | :---: | :---: | :---: |
-| <img src="(<img width="1850" height="875" alt="부산 ERP 메인보드" src="https://github.com/user-attachments/assets/1585f25c-04b3-4a27-a552-fe0eac52887d" />
-)" width="100%" /> | <img src="(부산 ERP 메인보드-1 링크)" width="100%" /> | <img src="(부산 ERP 메인보드-2 링크)" width="100%" /> |
+| <img src="https://github.com/user-attachments/assets/019f4864-0265-4c9e-9c78-8050cecbab81" width="100%" /> | <img src="https://github.com/user-attachments/assets/f4cfc02e-3a8f-4c5e-ba36-3d98369063ab" width="100%" /> | <img src="https://github.com/user-attachments/assets/b8d32ad2-ca84-4ab3-bbdf-307692ecc66a" width="100%" /> |
 
 ---
 
@@ -45,7 +43,7 @@
 
 | 지점 지도 및 로드뷰 기본 | 지점 정보 수정 모달 | 지점 필터 및 경로 조회 |
 | :---: | :---: | :---: |
-| <img src="(부산 ERP 맵 링크)" width="100%" /> | <img src="(부산 ERP 맵-1 링크)" width="100%" /> | <img src="(부산 ERP 맵-2 링크)" width="100%" /> |
+| <img src="https://github.com/user-attachments/assets/5834bffe-e0a6-450b-b4be-9677c055006f" width="100%" /> | <img src="https://github.com/user-attachments/assets/62d294bb-3596-4aea-b622-43114427a8f2" width="100%" /> | <img src="https://github.com/user-attachments/assets/1c2b3e68-a8e0-4330-9866-2436df61369c" width="100%" /> |
 
 ---
 
@@ -55,7 +53,7 @@
 
 | 실시간 입출고 및 SCM 공급망 관리 | 전국 지점별 물류 배송 스케줄 캘린더 |
 | :---: | :---: |
-| <img src="(부산ERP SCM 링크)" width="100%" /> | <img src="(부산 ERP 캘린더 링크)" width="100%" /> |
+| <img src="https://github.com/user-attachments/assets/4235fe35-f9b6-4d71-9725-bf3e158907c" width="100%" /> | <img src="https://github.com/user-attachments/assets/a137f49f-4695-40bd-a5e9-e2dfc61b0416" width="100%" /> |
 
 ---
 
@@ -65,11 +63,11 @@
 
 | 커뮤니티 목록 | 게시글 상세 및 삭제 알림 | 댓글 및 대댓글 소통 | 새 게시글 작성 |
 | :---: | :---: | :---: | :---: |
-| <img src="(부산ERP 커뮤니티 링크)" width="100%" /> | <img src="(부산ERP 커뮤니티-1 링크)" width="100%" /> | <img src="(부산ERP 커뮤니티-2 링크)" width="100%" /> | <img src="(부산ERP 커뮤니티-3 링크)" width="100%" /> |
+| <img src="https://github.com/user-attachments/assets/bcf4c73d-45be-43a5-9c15-4b30741a0a75" width="100%" /> | <img src="https://github.com/user-attachments/assets/9cb6e7bd-54aa-4d32-8362-32541d742a8a" width="100%" /> | <img src="https://github.com/user-attachments/assets/5c092462-f9d9-42ce-b5f0-23c4418128c7" width="100%" /> | <img src="https://github.com/user-attachments/assets/510c51f7-8fbf-4ac4-86ad-6454dc702556" width="100%" /> |
 
 | 마이페이지 (계정 정보) | 마이페이지 (업무 바로가기) |
 | :---: | :---: |
-| <img src="(부산ERP 마이페이지 링크)" width="100%" /> | <img src="(부산ERP 마이페이지-1 링크)" width="100%" /> |
+| <img src="https://github.com/user-attachments/assets/9322b511-a01f-484f-8eb2-d57d21f87358" width="100%" /> | <img src="https://github.com/user-attachments/assets/617b4198-104d-4d0a-bcf2-83e9297600b0" width="100%" /> |
 
 ---
 
