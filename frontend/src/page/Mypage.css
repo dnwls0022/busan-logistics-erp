@@ -524,3 +524,181 @@
 .signup-submit-margin {
   margin-top: 5px;
 }
+
+/* 알림 수신 설정 토글 버튼 스타일 */
+.notification-row {
+  align-items: center;
+}
+
+.toggle-btn-on {
+  background-color: #2e7d32;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.toggle-btn-on:hover {
+  background-color: #1b5e20;
+}
+
+.toggle-btn-off {
+  background-color: #d7ccc8;
+  color: #5d4037;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.toggle-btn-off:hover {
+  background-color: #bcaaa4;
+}
+
+/* 알림 수신 설정 토글 버튼 스타일 */
+.notification-row {
+  align-items: center;
+}
+
+.toggle-btn-on {
+  background-color: #2e7d32;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.toggle-btn-on:hover {
+  background-color: #1b5e20;
+}
+
+.toggle-btn-off {
+  background-color: #d7ccc8;
+  color: #5d4037;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.toggle-btn-off:hover {
+  background-color: #bcaaa4;
+}
+
+/* 14번: 내 활동 내역 요약 스타일 */
+.activity-tabs-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #efebe9;
+  padding-bottom: 8px;
+}
+
+.activity-tab-btn-active {
+  background-color: #5d4037;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.activity-tab-btn-inactive {
+  background-color: #f5f2ef;
+  color: #795548;
+  border: 1px solid #d7ccc8;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.activity-list-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  padding: 10px 12px;
+  border: 1px solid #e0d8d0;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.activity-item:hover {
+  background-color: #f9f6f0;
+  border-color: #8d6e63;
+}
+
+.activity-item-title {
+  color: #3e2723;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+}
+
+.activity-item-date {
+  color: #8d6e63;
+  font-size: 11px;
+}
+
+.activity-empty {
+  text-align: center;
+  color: #8d6e63;
+  font-size: 13px;
+  padding: 15px 0;
+  margin: 0;
+}
+
+/* 12번: 회원 탈퇴 버튼 스타일 */
+.withdrawal-area {
+  margin-top: 15px;
+  padding-top: 12px;
+  border-top: 1px dashed #d7ccc8;
+  text-align: right;
+}
+
+.withdrawal-btn {
+  background: none;
+  border: none;
+  color: #d32f2f;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+.withdrawal-btn:hover {
+  background-color: #ffebee;
+  text-decoration: underline;
+}

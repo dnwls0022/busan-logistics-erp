@@ -36,10 +36,20 @@ export default function Mypage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [accessTime, setAccessTime] = useState('');
 
+  // 15번: 알림 수신 설정 상태
+  const [notifications, setNotifications] = useState({
+    notice: true,
+    schedule: false,
+  });
+
+  // 13번: 내가 쓴 글 / 댓글 실시간 연동 데이터 상태
+  const [activeTab, setActiveTab] = useState<'posts' | 'comments'>('posts');
+  const [myPosts, setMyPosts] = useState<any[]>([]);
+  const [myComments, setMyComments] = useState<any[]>([]);
+
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
-  // 아이디/비밀번호 찾기 (이메일 인증 기반 2단계 상태)
   const [isFindModalOpen, setIsFindModalOpen] = useState(false);
   const [findType, setFindType] = useState<'id' | 'pw'>('id');
   const [findForm, setFindForm] = useState({ name: '', phone: '', email: '' });
@@ -70,6 +80,8 @@ export default function Mypage() {
           phone: userData.phone || '',
         });
         setIsLoggedIn(true);
+        // 🟢 13번: 로그인된 유저의 이메일을 기반으로 실제 백엔드 활동 내역(글/댓글) 조회
+        fetchMyActivityData(userData.email);
       } catch (e) {
         console.error('사용자 세션 파싱 실패', e);
         localStorage.removeItem('user');
@@ -99,6 +111,24 @@ export default function Mypage() {
     setAccessTime(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`);
   }, []);
 
+  // 🟢 13번: 실제 백엔드 API와 연동하여 사용자가 작성한 글 및 댓글을 가져오는 함수
+  const fetchMyActivityData = async (email: string) => {
+    if (!email) return;
+    try {
+      const res = await axios.get(`/api/users/me/activities?email=${encodeURIComponent(email)}`);
+      // 백엔드 응답 구조에 맞게 설정 (예: res.data.posts, res.data.comments)
+      if (res.data) {
+        setMyPosts(res.data.posts || []);
+        setMyComments(res.data.comments || []);
+      }
+    } catch (e) {
+      console.error('실시간 활동 내역 조회 실패:', e);
+      // API가 아직 백엔드에 구현되지 않았을 경우를 대비한 안전 장치 (필요시 빈 배열 유지)
+      setMyPosts([]);
+      setMyComments([]);
+    }
+  };
+
   const handleGoogleResponse = async (response: any) => {
     try {
       const tokenPayload = parseJwt(response.credential);
@@ -118,6 +148,7 @@ export default function Mypage() {
       });
       setIsLoggedIn(true);
       setIsLoginModalOpen(false);
+      fetchMyActivityData(userData.email); // 로그인 직후 활동 내역 갱신
       alert(`환영합니다, ${userData.email}님! 구글 계정으로 로그인되었습니다.`);
     } catch (error: any) {
       console.error('구글 로그인 연동 실패:', error);
@@ -140,6 +171,7 @@ export default function Mypage() {
         phone: userData.phone || '',
       });
       setIsLoggedIn(true);
+      fetchMyActivityData(userData.email);
       alert(`환영합니다, ${userData.email}님! 네이버 계정으로 로그인되었습니다.`);
       window.history.replaceState({}, document.title, "/mypage");
     } catch (e: any) {
@@ -163,6 +195,7 @@ export default function Mypage() {
         phone: userData.phone || '',
       });
       setIsLoggedIn(true);
+      fetchMyActivityData(userData.email);
       alert(`환영합니다, ${userData.email}님! 카카오 계정으로 로그인되었습니다.`);
       window.history.replaceState({}, document.title, "/mypage");
     } catch (e: any) {
@@ -206,6 +239,7 @@ export default function Mypage() {
                   });
                   setIsLoggedIn(true);
                   setIsLoginModalOpen(false);
+                  fetchMyActivityData(userData.email);
                   alert(`환영합니다, ${userData.email}님!`);
                 } catch (err: any) {
                   alert(err.response?.data || '구글 로그인 처리 중 오류가 발생했습니다.');
@@ -256,6 +290,7 @@ export default function Mypage() {
 
         setIsLoggedIn(true);
         setIsLoginModalOpen(false);
+        fetchMyActivityData(userData.email);
         alert('관리자로 성공적으로 로그인되었습니다.');
 
       } else {
@@ -277,6 +312,7 @@ export default function Mypage() {
         
         setIsLoggedIn(true);
         setIsLoginModalOpen(false);
+        fetchMyActivityData(userData.email);
         alert('성공적으로 로그인되었습니다.');
       }
 
@@ -296,6 +332,22 @@ export default function Mypage() {
     }
   };
 
+  const handleWithdrawal = async () => {
+    if (confirm('⚠️ 정말 회원탈퇴를 진행하시겠습니까?\n탈퇴 시 계정은 비활성화되며 동일한 이메일로 다시 로그인할 수 없습니다.')) {
+      try {
+        await axios.delete(`/api/users/me?email=${encodeURIComponent(userInfo.email)}`);
+        alert('회원탈퇴가 정상적으로 처리되었습니다.');
+        setIsLoggedIn(false);
+        setIsDetailOpen(false);
+        localStorage.removeItem('user');
+        navigate('/');
+      } catch (e: any) {
+        console.error('회원탈퇴 실패:', e);
+        alert(e.response?.data || '회원탈퇴 처리에 실패했습니다.');
+      }
+    }
+  };
+
   const handleSave = () => {
     setUserInfo(tempInfo);
     setIsEditing(false);
@@ -312,6 +364,15 @@ export default function Mypage() {
     }
 
     alert('회원 정보가 수정되었습니다.');
+  };
+
+  const handleNotificationToggle = (key: 'notice' | 'schedule') => {
+    setNotifications((prev) => {
+      const updated = { ...prev, [key]: !prev[key] };
+      const label = key === 'notice' ? '지점 공지사항 알림' : '배송 스케줄 변동 알림';
+      alert(`${label} 설정이 [${updated[key] ? 'ON' : 'OFF'}]로 변경되었습니다.`);
+      return updated;
+    });
   };
 
   const formatPhoneNumber = (value: string) => {
@@ -339,6 +400,12 @@ export default function Mypage() {
     const nameRegex = /^[가-힣]{3,}$/;
     if (!nameRegex.test(signupForm.name)) {
       alert('이름은 한글 3글자 이상이어야 합니다.');
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    if (!emailRegex.test(signupForm.email)) {
+      alert('올바른 이메일 형식을 입력해주세요. (예: id@naver.com)');
       return;
     }
 
@@ -500,9 +567,18 @@ export default function Mypage() {
 
           <div className="card">
             <h4 className="section-title">💡 이용 안내 & 지원 서비스</h4>
-            <div className="info-row"><span className="info-label">시스템 운영 시간</span><span className="info-value">365일 24시간 연중무휴 상시 가동</span></div>
-            <div className="info-row"><span className="info-label">관리자 계정 문의</span><span className="info-value">logistics_admin@cafelog.com</span></div>
-            <div className="info-row-last"><span className="info-label">본사 물류 지원센터</span><span className="info-value">051-123-4567 (평일 09:00 ~ 18:00)</span></div>
+            <div className="info-row">
+              <span className="info-label">시스템 운영 시간</span>
+              <span className="info-value">365일 24시간 클라우드 상시 가동 (Vercel & Railway)</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">개발자 및 시스템 문의</span>
+              <span className="info-value">whdnwlszzz@naver.com (조우진)</span>
+            </div>
+            <div className="info-row-last">
+              <span className="info-label">부산 본사 물류 지원센터</span>
+              <span className="info-value">051-987-6543 (평일 09:00 ~ 18:00)</span>
+            </div>
           </div>
         </>
       ) : (
@@ -525,6 +601,78 @@ export default function Mypage() {
             <div className="info-row"><span className="info-label">담당 업무 권한</span><span className="info-value">{userInfo.role}</span></div>
             <div className="info-row-last"><span className="info-label">시스템 상태</span><span className="info-value status-online">정상 가동 중 (ONLINE)</span></div>
           </div>
+
+          {/* 알림 및 공지 수신 설정 카드 */}
+          <div className="card">
+            <h4 className="section-title">🔔 알림 및 공지 수신 설정</h4>
+            <div className="info-row notification-row">
+              <span className="info-label">새로운 지점 공지사항 알림 받기</span>
+              <button
+                type="button"
+                onClick={() => handleNotificationToggle('notice')}
+                className={notifications.notice ? 'toggle-btn-on' : 'toggle-btn-off'}
+              >
+                {notifications.notice ? 'ON (수신중)' : 'OFF (차단)'}
+              </button>
+            </div>
+            <div className="info-row-last notification-row">
+              <span className="info-label">배송 스케줄 및 입출고 변동 알림</span>
+              <button
+                type="button"
+                onClick={() => handleNotificationToggle('schedule')}
+                className={notifications.schedule ? 'toggle-btn-on' : 'toggle-btn-off'}
+              >
+                {notifications.schedule ? 'ON (수신중)' : 'OFF (차단)'}
+              </button>
+            </div>
+          </div>
+
+          {/* 🟢 13번: 내 활동 내역 실시간 연동 리스트 카드 */}
+          <div className="card">
+            <h4 className="section-title">📋 내 활동 내역 요약 (실시간 연동)</h4>
+            <div className="activity-tabs-wrap">
+              <button 
+                type="button"
+                onClick={() => setActiveTab('posts')} 
+                className={activeTab === 'posts' ? 'activity-tab-btn-active' : 'activity-tab-btn-inactive'}
+              >
+                내가 쓴 게시글 ({myPosts.length})
+              </button>
+              <button 
+                type="button"
+                onClick={() => setActiveTab('comments')} 
+                className={activeTab === 'comments' ? 'activity-tab-btn-active' : 'activity-tab-btn-inactive'}
+              >
+                내가 쓴 댓글 ({myComments.length})
+              </button>
+            </div>
+
+            <div className="activity-list-box">
+              {activeTab === 'posts' ? (
+                myPosts.length > 0 ? (
+                  myPosts.map((post) => (
+                    <div key={post.id} className="activity-item" onClick={() => navigate('/community')}>
+                      <span className="activity-item-title">📄 {post.title}</span>
+                      <span className="activity-item-date">{post.date}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="activity-empty">작성한 게시글이 없습니다.</p>
+                )
+              ) : (
+                myComments.length > 0 ? (
+                  myComments.map((comment) => (
+                    <div key={comment.id} className="activity-item" onClick={() => navigate('/community')}>
+                      <span className="activity-item-title">💬 {comment.content} <small style={{color: '#8d6e63'}}>({comment.postTitle})</small></span>
+                      <span className="activity-item-date">{comment.date}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="activity-empty">작성한 댓글이 없습니다.</p>
+                )
+              )}
+            </div>
+          </div>
         </>
       )}
 
@@ -536,6 +684,14 @@ export default function Mypage() {
           <span>최근 접속 일시: <strong>{accessTime}</strong> (부산 본사 IP)</span>
           <span className="security-badge">안전</span>
         </div>
+
+        {isLoggedIn && (
+          <div className="withdrawal-area" style={{ marginTop: '15px' }}>
+            <button type="button" onClick={handleWithdrawal} style={{ backgroundColor: '#dc3545', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}>
+              ⚠️ 영구 회원 탈퇴하기
+            </button>
+          </div>
+        )}
       </div>
 
       {isLoginModalOpen && (
@@ -652,7 +808,7 @@ export default function Mypage() {
             <form onSubmit={handleSignupSubmit} className="signup-form-layout">
               <input type="text" name="name" placeholder="이름 (한글 3글자 이상)" value={signupForm.name} onChange={handleSignupChange} className="form-input" />
               <input type="text" name="branch" placeholder="소속 지점" value={signupForm.branch} onChange={handleSignupChange} className="form-input" />
-              <input type="email" name="email" placeholder="이메일" value={signupForm.email} onChange={handleSignupChange} className="form-input" />
+              <input type="email" name="email" placeholder="이메일 (예: id@naver.com)" value={signupForm.email} onChange={handleSignupChange} className="form-input" />
               <input type="password" name="password" placeholder="비밀번호 (영문, 숫자, 특수기호)" value={signupForm.password} onChange={handleSignupChange} className="form-input" />
               <input type="text" name="phone" placeholder="연락처 (자동 하이픈)" value={signupForm.phone} onChange={handleSignupChange} maxLength={13} className="form-input" />
               <button type="submit" className="submit-button signup-submit-margin">가입 신청</button>
