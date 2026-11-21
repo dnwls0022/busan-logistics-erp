@@ -654,3 +654,26 @@
   margin-left: 4px;
 }
 
+.detail-actions-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.edit-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #4A3B32;
+  background-color: #FFF;
+  color: #4A3B32;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.edit-btn:hover {
+  background-color: #F1ECE1;
+}
+

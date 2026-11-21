@@ -49,16 +49,59 @@
   gap: 16px;
 }
 
+.profile-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
 .profile-avatar {
-  font-size: 36px;
+  font-size: 44px;
   background-color: #efebe9;
-  width: 60px;
-  height: 60px;
+  width: 90px;
+  height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  border: 2px solid #d7ccc8;
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.profile-avatar:hover {
+  border-color: #5d4037;
+  transform: scale(1.03);
+}
+
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-photo-btn {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
   border: 1px solid #d7ccc8;
+  background-color: #fff;
+  color: #5d4037;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.profile-photo-btn:hover {
+  background-color: #efebe9;
+}
+
+.profile-file-input-hidden {
+  display: none;
 }
 
 .profile-name-row {
@@ -523,43 +566,6 @@
 
 .signup-submit-margin {
   margin-top: 5px;
-}
-
-/* 알림 수신 설정 토글 버튼 스타일 */
-.notification-row {
-  align-items: center;
-}
-
-.toggle-btn-on {
-  background-color: #2e7d32;
-  color: #fff;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 15px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.toggle-btn-on:hover {
-  background-color: #1b5e20;
-}
-
-.toggle-btn-off {
-  background-color: #d7ccc8;
-  color: #5d4037;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 15px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.toggle-btn-off:hover {
-  background-color: #bcaaa4;
 }
 
 /* 알림 수신 설정 토글 버튼 스타일 */

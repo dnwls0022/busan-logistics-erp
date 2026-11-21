@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { 
-  Pin, 
-  Paperclip, 
-  ThumbsUp, 
-  MessageSquare, 
-  Trash2, 
-  CornerDownRight, 
-  Search, 
+import React, { useState, useEffect } from 'react';
+import {
+  Pin,
+  Paperclip,
+  ThumbsUp,
+  MessageSquare,
+  Trash2,
+  Edit3,
+  CornerDownRight,
+  Search,
   X,
   FileText,
   Download
@@ -58,11 +59,50 @@ export interface User {
   role: 'USER' | 'ADMIN';
 }
 
-const currentUser: User = {
-  id: 'user123',
-  name: '조우진',
-  branch: '부산 서면점',
-  role: 'ADMIN'
+const STORAGE_KEY = 'cafe_logistics_community_posts_v1';
+
+// ✅ [수정] 고정된 currentUser 대신 로그인 세션(localStorage 'user')에서 사용자 정보를 읽어오는 함수 추가
+const getActiveUser = (): User => {
+  const fallbackUser: User = {
+    id: 'guest',
+    name: '조우진',
+    branch: '부산 서면점',
+    role: 'ADMIN',
+  };
+
+  try {
+    const rawUser = localStorage.getItem('user');
+    if (!rawUser) return fallbackUser;
+
+    const parsed = JSON.parse(rawUser);
+    if (!parsed || typeof parsed !== 'object') return fallbackUser;
+
+    const rawRole = String(parsed.role || '').toUpperCase();
+    const normalizedRole: 'USER' | 'ADMIN' =
+      rawRole.includes('ADMIN') || rawRole.includes('관리자') ? 'ADMIN' : 'USER';
+
+    const resolvedName =
+      typeof parsed.name === 'string' && parsed.name.trim()
+        ? parsed.name.trim()
+        : typeof parsed.email === 'string' && parsed.email.trim()
+          ? parsed.email.trim()
+          : fallbackUser.name;
+
+    const resolvedBranch =
+      typeof parsed.branch === 'string' && parsed.branch.trim()
+        ? parsed.branch.trim()
+        : fallbackUser.branch;
+
+    return {
+      id: String(parsed.id || parsed.email || resolvedName),
+      name: resolvedName,
+      branch: resolvedBranch,
+      role: normalizedRole,
+    };
+  } catch (e) {
+    console.error('로그인 사용자 정보 불러오기 실패:', e);
+    return fallbackUser;
+  }
 };
 
 const branchList = [
@@ -128,27 +168,80 @@ const initialPosts: Post[] = [
   }
 ];
 
+const loadSavedPosts = (): Post[] => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return initialPosts;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : initialPosts;
+  } catch (e) {
+    console.error('게시글 불러오기 실패:', e);
+    return initialPosts;
+  }
+};
+
 export const CommunityBoard: React.FC = () => {
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  // ✅ [수정] 현재 로그인한 사용자 상태를 관리하도록 변경
+  const [currentUser, setCurrentUser] = useState<User>(getActiveUser);
+
+  const [posts, setPosts] = useState<Post[]>(loadSavedPosts);
   const [activeCategory, setActiveCategory] = useState<Category>('전체');
   const [searchTarget, setSearchTarget] = useState<'all' | 'title' | 'author' | 'branch'>('all');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
-  
-  const [viewMode, setViewMode] = useState<'list' | 'detail' | 'write'>('list');
+
+  const [viewMode, setViewMode] = useState<'list' | 'detail' | 'write' | 'edit'>('list');
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
 
+  // 글 작성 상태
   const [newCategory, setNewCategory] = useState<Category>('원두/재고');
   const [newTitle, setNewTitle] = useState<string>('');
   const [newContent, setNewContent] = useState<string>('');
   const [newIsPinned, setNewIsPinned] = useState<boolean>(false);
   const [newStatus] = useState<ProcessStatus>('접수중');
   const [selectedBranch, setSelectedBranch] = useState<string>(currentUser.branch);
-
   const [attachedFiles, setAttachedFiles] = useState<FileItem[]>([]);
+
+  // 글 수정 상태
+  const [editCategory, setEditCategory] = useState<Category>('원두/재고');
+  const [editTitle, setEditTitle] = useState<string>('');
+  const [editContent, setEditContent] = useState<string>('');
+  const [editBranch, setEditBranch] = useState<string>(currentUser.branch);
+  const [editIsPinned, setEditIsPinned] = useState<boolean>(false);
+  const [editStatus, setEditStatus] = useState<ProcessStatus>('접수중');
+
+  // 댓글 상태
   const [commentInput, setCommentInput] = useState<string>('');
   const [replyTargetId, setReplyTargetId] = useState<number | null>(null);
 
-  // 💡 실질적인 파일 다운로드 처리 함수
+  // ✅ [수정] 탭 이동/포커스/스토리지 변경 시 로그인 계정 정보 동기화
+  useEffect(() => {
+    const syncUserFromStorage = () => {
+      const updatedUser = getActiveUser();
+      setCurrentUser(updatedUser);
+      setSelectedBranch((prevBranch) =>
+        branchList.includes(updatedUser.branch) ? updatedUser.branch : prevBranch || updatedUser.branch
+      );
+    };
+
+    syncUserFromStorage();
+    window.addEventListener('focus', syncUserFromStorage);
+    window.addEventListener('storage', syncUserFromStorage);
+
+    return () => {
+      window.removeEventListener('focus', syncUserFromStorage);
+      window.removeEventListener('storage', syncUserFromStorage);
+    };
+  }, []);
+
+  // 6번 해결: posts가 바뀔 때마다 localStorage에 자동 저장
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+    } catch (e) {
+      console.error('게시글 저장 실패 (용량 초과 가능):', e);
+    }
+  }, [posts]);
+
   const handleFileDownload = (file: FileItem) => {
     if (file.url) {
       const link = document.createElement('a');
@@ -158,7 +251,9 @@ export const CommunityBoard: React.FC = () => {
       link.click();
       document.body.removeChild(link);
     } else {
-      const fileContent = file.content || `[CAFE LOGISTICS ERP Log File]\nFile Name: ${file.name}\nGenerated Date: ${new Date().toLocaleString()}`;
+      const fileContent =
+        file.content ||
+        `[CAFE LOGISTICS ERP Log File]\nFile Name: ${file.name}\nGenerated Date: ${new Date().toLocaleString()}`;
       const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -174,61 +269,69 @@ export const CommunityBoard: React.FC = () => {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const filesArray = Array.from(e.target.files);
-    
+
     filesArray.forEach((file, idx) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const textContent = event.target?.result as string;
-        const newFileItem: FileItem = {
-          id: `${Date.now()}-${idx}`,
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          url: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
-          content: textContent
-        };
-        setAttachedFiles(prev => [...prev, newFileItem]);
-      };
       if (file.type.startsWith('image/')) {
-        const newFileItem: FileItem = {
-          id: `${Date.now()}-${idx}`,
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          url: URL.createObjectURL(file)
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const base64Url = event.target?.result as string;
+          const newFileItem: FileItem = {
+            id: `${Date.now()}-${idx}`,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            url: base64Url,
+          };
+          setAttachedFiles((prev) => [...prev, newFileItem]);
         };
-        setAttachedFiles(prev => [...prev, newFileItem]);
+        reader.readAsDataURL(file);
       } else {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const textContent = event.target?.result as string;
+          const newFileItem: FileItem = {
+            id: `${Date.now()}-${idx}`,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            content: textContent,
+          };
+          setAttachedFiles((prev) => [...prev, newFileItem]);
+        };
         reader.readAsText(file);
       }
     });
   };
 
   const handleRemoveFile = (fileId: string) => {
-    setAttachedFiles(prev => prev.filter(f => f.id !== fileId));
+    setAttachedFiles((prev) => prev.filter((f) => f.id !== fileId));
   };
 
   const handleCreatePost = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newContent.trim()) return;
 
+    // ✅ [수정] 글 등록 시점의 최신 로그인 사용자를 작성자로 반영
+    const activeUser = getActiveUser();
+    setCurrentUser(activeUser);
+
     const newPost: Post = {
       id: Date.now(),
       category: newCategory,
-      title: newTitle,
-      content: newContent,
-      author: currentUser.name,
+      title: newTitle.trim(),
+      content: newContent.trim(),
+      author: activeUser.name,
       branch: selectedBranch,
       createdAt: new Date().toISOString().split('T')[0],
       views: 0,
       likes: 0,
-      isPinned: currentUser.role === 'ADMIN' ? newIsPinned : false,
+      isPinned: activeUser.role === 'ADMIN' ? newIsPinned : false,
       status: newCategory === '원두/재고' ? newStatus : undefined,
       attachments: attachedFiles,
-      comments: []
+      comments: [],
     };
 
-    setPosts([newPost, ...posts]);
+    setPosts((prev) => [newPost, ...prev]);
     setNewTitle('');
     setNewContent('');
     setAttachedFiles([]);
@@ -236,41 +339,89 @@ export const CommunityBoard: React.FC = () => {
     setViewMode('list');
   };
 
+  // 5번 해결: 수정 모드 진입
+  const handleStartEdit = (post: Post) => {
+    setEditCategory(post.category);
+    setEditTitle(post.title);
+    setEditContent(post.content);
+    setEditBranch(post.branch);
+    setEditIsPinned(post.isPinned);
+    setEditStatus(post.status || '접수중');
+    setViewMode('edit');
+  };
+
+  // 5번 해결: 수정 내용 저장
+  const handleUpdatePost = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedPostId || !editTitle.trim() || !editContent.trim()) return;
+
+    // ✅ [수정] 수정 저장 시점의 최신 로그인 권한 반영
+    const activeUser = getActiveUser();
+    setCurrentUser(activeUser);
+
+    setPosts((prev) =>
+      prev.map((post) => {
+        if (post.id !== selectedPostId) return post;
+        return {
+          ...post,
+          category: editCategory,
+          title: editTitle.trim(),
+          content: editContent.trim(),
+          branch: editBranch,
+          isPinned: activeUser.role === 'ADMIN' ? editIsPinned : post.isPinned,
+          status: editCategory === '원두/재고' ? editStatus : undefined,
+        };
+      })
+    );
+
+    setViewMode('detail');
+  };
+
   const handleDeletePost = (postId: number) => {
     if (window.confirm('정말 삭제하시겠습니까?')) {
-      setPosts(posts.filter(p => p.id !== postId));
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
       setViewMode('list');
       setSelectedPostId(null);
     }
   };
 
-  const handleStatusChange = (postId: number, newStatus: ProcessStatus) => {
-    setPosts(posts.map(post => post.id === postId ? { ...post, status: newStatus } : post));
+  const handleStatusChange = (postId: number, updatedStatus: ProcessStatus) => {
+    setPosts((prev) =>
+      prev.map((post) => (post.id === postId ? { ...post, status: updatedStatus } : post))
+    );
   };
 
   const handleLikePost = (postId: number) => {
-    setPosts(posts.map(post => post.id === postId ? { ...post, likes: post.likes + 1 } : post));
+    setPosts((prev) =>
+      prev.map((post) => (post.id === postId ? { ...post, likes: post.likes + 1 } : post))
+    );
   };
 
   const handleAddComment = (postId: number) => {
     if (!commentInput.trim()) return;
 
+    // ✅ [수정] 댓글 작성 시점의 최신 로그인 사용자를 작성자로 반영
+    const activeUser = getActiveUser();
+    setCurrentUser(activeUser);
+
     const newComment: Comment = {
       id: Date.now(),
-      author: currentUser.name,
-      branch: currentUser.branch,
-      content: commentInput,
+      author: activeUser.name,
+      branch: activeUser.branch,
+      content: commentInput.trim(),
       createdAt: new Date().toISOString().split('T')[0],
       likes: 0,
-      parentId: replyTargetId
+      parentId: replyTargetId,
     };
 
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return { ...post, comments: [...post.comments, newComment] };
-      }
-      return post;
-    }));
+    setPosts((prev) =>
+      prev.map((post) => {
+        if (post.id === postId) {
+          return { ...post, comments: [...post.comments, newComment] };
+        }
+        return post;
+      })
+    );
 
     setCommentInput('');
     setReplyTargetId(null);
@@ -278,38 +429,46 @@ export const CommunityBoard: React.FC = () => {
 
   const handleDeleteComment = (postId: number, commentId: number) => {
     if (window.confirm('정말 이 댓글을 삭제하시겠습니까?')) {
-      setPosts(posts.map(post => {
-        if (post.id === postId) {
-          const updatedComments = post.comments.filter(
-            c => c.id !== commentId && c.parentId !== commentId
-          );
-          return { ...post, comments: updatedComments };
-        }
-        return post;
-      }));
+      setPosts((prev) =>
+        prev.map((post) => {
+          if (post.id === postId) {
+            const updatedComments = post.comments.filter(
+              (c) => c.id !== commentId && c.parentId !== commentId
+            );
+            return { ...post, comments: updatedComments };
+          }
+          return post;
+        })
+      );
     }
   };
 
-  const filteredPosts = posts.filter(post => {
-    const matchesCategory = activeCategory === '전체' || post.category === activeCategory;
-    
-    let matchesSearch = true;
-    if (searchKeyword.trim() !== '') {
-      const kw = searchKeyword.toLowerCase();
-      if (searchTarget === 'title') matchesSearch = post.title.toLowerCase().includes(kw);
-      else if (searchTarget === 'author') matchesSearch = post.author.toLowerCase().includes(kw);
-      else if (searchTarget === 'branch') matchesSearch = post.branch.toLowerCase().includes(kw);
-      else matchesSearch = post.title.toLowerCase().includes(kw) || post.content.toLowerCase().includes(kw) || post.author.toLowerCase().includes(kw);
-    }
+  const filteredPosts = posts
+    .filter((post) => {
+      const matchesCategory = activeCategory === '전체' || post.category === activeCategory;
 
-    return matchesCategory && matchesSearch;
-  }).sort((a, b) => {
-    if (a.isPinned && !b.isPinned) return -1;
-    if (!a.isPinned && b.isPinned) return 1;
-    return b.id - a.id;
-  });
+      let matchesSearch = true;
+      if (searchKeyword.trim() !== '') {
+        const kw = searchKeyword.toLowerCase();
+        if (searchTarget === 'title') matchesSearch = post.title.toLowerCase().includes(kw);
+        else if (searchTarget === 'author') matchesSearch = post.author.toLowerCase().includes(kw);
+        else if (searchTarget === 'branch') matchesSearch = post.branch.toLowerCase().includes(kw);
+        else
+          matchesSearch =
+            post.title.toLowerCase().includes(kw) ||
+            post.content.toLowerCase().includes(kw) ||
+            post.author.toLowerCase().includes(kw);
+      }
 
-  const selectedPost = posts.find(p => p.id === selectedPostId);
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return b.id - a.id;
+    });
+
+  const selectedPost = posts.find((p) => p.id === selectedPostId);
 
   return (
     <div className="community-container">
@@ -322,7 +481,7 @@ export const CommunityBoard: React.FC = () => {
         <main>
           <div className="community-toolbar">
             <div className="category-group">
-              {(['전체', '원두/재고', '물류/아이디어', '공지사항', '자유소통'] as Category[]).map(cat => (
+              {(['전체', '원두/재고', '물류/아이디어', '공지사항', '자유소통'] as Category[]).map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
@@ -334,9 +493,9 @@ export const CommunityBoard: React.FC = () => {
             </div>
 
             <div className="search-write-group">
-              <select 
-                value={searchTarget} 
-                onChange={e => setSearchTarget(e.target.value as any)}
+              <select
+                value={searchTarget}
+                onChange={(e) => setSearchTarget(e.target.value as any)}
                 className="search-select"
               >
                 <option value="all">전체검색</option>
@@ -344,20 +503,28 @@ export const CommunityBoard: React.FC = () => {
                 <option value="author">작성자</option>
                 <option value="branch">지점명</option>
               </select>
-              
+
               <div className="search-input-wrap">
                 <input
                   type="text"
                   placeholder="검색어 입력..."
                   value={searchKeyword}
-                  onChange={e => setSearchKeyword(e.target.value)}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
                   className="search-input"
                 />
                 <Search size={16} className="search-icon" />
               </div>
 
+              {/* ✅ [수정] 글쓰기 버튼 클릭 시 최신 로그인 사용자 및 지점으로 상태 동기화 */}
               <button
-                onClick={() => setViewMode('write')}
+                onClick={() => {
+                  const latestUser = getActiveUser();
+                  setCurrentUser(latestUser);
+                  setSelectedBranch(
+                    branchList.includes(latestUser.branch) ? latestUser.branch : branchList[0]
+                  );
+                  setViewMode('write');
+                }}
                 className="write-btn"
               >
                 ✏️ 글쓰기
@@ -384,11 +551,13 @@ export const CommunityBoard: React.FC = () => {
               </thead>
               <tbody>
                 {filteredPosts.map((post) => (
-                  <tr 
+                  <tr
                     key={post.id}
                     onClick={() => {
                       setSelectedPostId(post.id);
-                      setPosts(posts.map(p => p.id === post.id ? { ...p, views: p.views + 1 } : p));
+                      setPosts((prev) =>
+                        prev.map((p) => (p.id === post.id ? { ...p, views: p.views + 1 } : p))
+                      );
                       setViewMode('detail');
                     }}
                     className={`post-row ${post.isPinned ? 'pinned-row' : ''}`}
@@ -405,9 +574,7 @@ export const CommunityBoard: React.FC = () => {
                     <td className="col-title">
                       <div className="title-flex">
                         {post.status && (
-                          <span className={`status-badge ${post.status}`}>
-                            [{post.status}]
-                          </span>
+                          <span className={`status-badge ${post.status}`}>[{post.status}]</span>
                         )}
                         <span className={`title-text ${post.isPinned ? 'pinned-title' : ''}`}>
                           {post.title}
@@ -433,20 +600,27 @@ export const CommunityBoard: React.FC = () => {
       {viewMode === 'detail' && selectedPost && (
         <main className="detail-card">
           <div className="detail-top-bar">
-            <button 
-              onClick={() => setViewMode('list')}
-              className="back-btn"
-            >
+            <button onClick={() => setViewMode('list')} className="back-btn">
               ← 목록으로 돌아가기
             </button>
 
             {(selectedPost.author === currentUser.name || currentUser.role === 'ADMIN') && (
-              <button 
-                onClick={() => handleDeletePost(selectedPost.id)}
-                className="delete-btn"
-              >
-                <Trash2 size={14} /> 글 삭제하기
-              </button>
+              <div className="detail-actions-right">
+                <button
+                  type="button"
+                  onClick={() => handleStartEdit(selectedPost)}
+                  className="edit-btn"
+                >
+                  <Edit3 size={14} /> 글 수정하기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeletePost(selectedPost.id)}
+                  className="delete-btn"
+                >
+                  <Trash2 size={14} /> 글 삭제하기
+                </button>
+              </div>
             )}
           </div>
 
@@ -455,9 +629,9 @@ export const CommunityBoard: React.FC = () => {
               <span className="badge-category">{selectedPost.category}</span>
               <span className="badge-branch">{selectedPost.branch}</span>
               {selectedPost.status && (
-                <select 
+                <select
                   value={selectedPost.status}
-                  onChange={e => handleStatusChange(selectedPost.id, e.target.value as ProcessStatus)}
+                  onChange={(e) => handleStatusChange(selectedPost.id, e.target.value as ProcessStatus)}
                   className="status-select"
                 >
                   <option value="접수중">접수중</option>
@@ -469,23 +643,26 @@ export const CommunityBoard: React.FC = () => {
 
             <h2 className="detail-title">{selectedPost.title}</h2>
             <div className="detail-info-bar">
-              <div>작성자: <strong>{selectedPost.author}</strong> ({selectedPost.branch})</div>
-              <div>등록일: {selectedPost.createdAt} | 조회수: {selectedPost.views}</div>
+              <div>
+                작성자: <strong>{selectedPost.author}</strong> ({selectedPost.branch})
+              </div>
+              <div>
+                등록일: {selectedPost.createdAt} | 조회수: {selectedPost.views}
+              </div>
             </div>
           </div>
 
-          <div className="detail-content">
-            {selectedPost.content}
-          </div>
+          <div className="detail-content">{selectedPost.content}</div>
 
-          {/* 💡 첨부파일 다운로드 연결 영역 */}
           {selectedPost.attachments.length > 0 && (
             <div className="attachment-box">
-              <h4><Paperclip size={14} /> 첨부파일 ({selectedPost.attachments.length})</h4>
+              <h4>
+                <Paperclip size={14} /> 첨부파일 ({selectedPost.attachments.length})
+              </h4>
               <div className="attachment-list">
-                {selectedPost.attachments.map(file => (
-                  <div 
-                    key={file.id} 
+                {selectedPost.attachments.map((file) => (
+                  <div
+                    key={file.id}
                     className="attachment-item clickable"
                     onClick={() => handleFileDownload(file)}
                     title="클릭하여 파일 다운로드"
@@ -501,72 +678,93 @@ export const CommunityBoard: React.FC = () => {
           )}
 
           <div className="like-section">
-            <button
-              onClick={() => handleLikePost(selectedPost.id)}
-              className="like-action-btn"
-            >
+            <button onClick={() => handleLikePost(selectedPost.id)} className="like-action-btn">
               <ThumbsUp size={16} /> 도움이 돼요! ({selectedPost.likes})
             </button>
           </div>
 
           <section className="comment-section">
-            <h3><MessageSquare size={16} /> 댓글 ({selectedPost.comments.length})</h3>
+            <h3>
+              <MessageSquare size={16} /> 댓글 ({selectedPost.comments.length})
+            </h3>
 
             <div className="comment-list">
-              {selectedPost.comments.filter(c => !c.parentId).map(comment => (
-                <div key={comment.id} className="comment-item-box">
-                  <div className="comment-meta">
-                    <strong>{comment.author} ({comment.branch})</strong>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="comment-date">{comment.createdAt}</span>
-                      <button 
-                        onClick={() => handleDeleteComment(selectedPost.id, comment.id)} 
-                        style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#EF4444', padding: 0 }}
-                        title="댓글 삭제"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                  <p className="comment-text">{comment.content}</p>
-                  
-                  <button
-                    onClick={() => setReplyTargetId(replyTargetId === comment.id ? null : comment.id)}
-                    className="reply-toggle-btn"
-                  >
-                    답글 달기
-                  </button>
-
-                  {selectedPost.comments.filter(reply => reply.parentId === comment.id).map(reply => (
-                    <div key={reply.id} className="reply-item-box">
-                      <CornerDownRight size={14} className="reply-arrow" />
-                      <div className="reply-content-box">
-                        <div className="comment-meta">
-                          <strong>{reply.author} ({reply.branch})</strong>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span className="comment-date">{reply.createdAt}</span>
-                            <button 
-                              onClick={() => handleDeleteComment(selectedPost.id, reply.id)} 
-                              style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#EF4444', padding: 0 }}
-                              title="답글 삭제"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-                        <p className="reply-text">{reply.content}</p>
+              {selectedPost.comments
+                .filter((c) => !c.parentId)
+                .map((comment) => (
+                  <div key={comment.id} className="comment-item-box">
+                    <div className="comment-meta">
+                      <strong>
+                        {comment.author} ({comment.branch})
+                      </strong>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="comment-date">{comment.createdAt}</span>
+                        <button
+                          onClick={() => handleDeleteComment(selectedPost.id, comment.id)}
+                          style={{
+                            border: 'none',
+                            background: 'none',
+                            cursor: 'pointer',
+                            color: '#EF4444',
+                            padding: 0,
+                          }}
+                          title="댓글 삭제"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ))}
+                    <p className="comment-text">{comment.content}</p>
+
+                    <button
+                      onClick={() => setReplyTargetId(replyTargetId === comment.id ? null : comment.id)}
+                      className="reply-toggle-btn"
+                    >
+                      답글 달기
+                    </button>
+
+                    {selectedPost.comments
+                      .filter((reply) => reply.parentId === comment.id)
+                      .map((reply) => (
+                        <div key={reply.id} className="reply-item-box">
+                          <CornerDownRight size={14} className="reply-arrow" />
+                          <div className="reply-content-box">
+                            <div className="comment-meta">
+                              <strong>
+                                {reply.author} ({reply.branch})
+                              </strong>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span className="comment-date">{reply.createdAt}</span>
+                                <button
+                                  onClick={() => handleDeleteComment(selectedPost.id, reply.id)}
+                                  style={{
+                                    border: 'none',
+                                    background: 'none',
+                                    cursor: 'pointer',
+                                    color: '#EF4444',
+                                    padding: 0,
+                                  }}
+                                  title="답글 삭제"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+                            <p className="reply-text">{reply.content}</p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ))}
             </div>
 
             <div className="comment-input-area">
               {replyTargetId && (
                 <div className="reply-notice-bar">
                   <span>선택한 댓글에 답글 작성 중...</span>
-                  <button onClick={() => setReplyTargetId(null)} className="cancel-reply-btn">취소</button>
+                  <button onClick={() => setReplyTargetId(null)} className="cancel-reply-btn">
+                    취소
+                  </button>
                 </div>
               )}
               <div className="comment-form-row">
@@ -574,18 +772,110 @@ export const CommunityBoard: React.FC = () => {
                   type="text"
                   placeholder="댓글을 입력하세요..."
                   value={commentInput}
-                  onChange={e => setCommentInput(e.target.value)}
+                  onChange={(e) => setCommentInput(e.target.value)}
                   className="comment-input"
                 />
-                <button
-                  onClick={() => handleAddComment(selectedPost.id)}
-                  className="comment-submit-btn"
-                >
+                <button onClick={() => handleAddComment(selectedPost.id)} className="comment-submit-btn">
                   등록
                 </button>
               </div>
             </div>
           </section>
+        </main>
+      )}
+
+      {viewMode === 'edit' && selectedPost && (
+        <main className="write-card">
+          <h2>✏️ 게시글 수정</h2>
+          <form onSubmit={handleUpdatePost} className="write-form">
+            <div className="write-row">
+              <select
+                value={editCategory}
+                onChange={(e) => setEditCategory(e.target.value as Category)}
+                className="write-category-select"
+              >
+                <option value="원두/재고">원두/재고</option>
+                <option value="물류/아이디어">물류/아이디어</option>
+                <option value="공지사항">공지사항</option>
+                <option value="자유소통">자유소통</option>
+              </select>
+
+              <input
+                type="text"
+                placeholder="글 제목을 입력하세요"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="write-title-input"
+                required
+              />
+            </div>
+
+            <div className="write-row">
+              <input
+                type="text"
+                value={`작성자: ${selectedPost.author}`}
+                disabled
+                className="write-disabled-input"
+              />
+              <select
+                value={editBranch}
+                onChange={(e) => setEditBranch(e.target.value)}
+                className="write-category-select"
+                style={{ width: '100%', flex: 1, backgroundColor: '#FFF' }}
+              >
+                {branchList.map((branchName) => (
+                  <option key={branchName} value={branchName}>
+                    소속 지점: {branchName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {editCategory === '원두/재고' && (
+              <div className="write-row">
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value as ProcessStatus)}
+                  className="write-category-select"
+                  style={{ width: '200px' }}
+                >
+                  <option value="접수중">처리상태: 접수중</option>
+                  <option value="처리중">처리상태: 처리중</option>
+                  <option value="조치완료">처리상태: 조치완료</option>
+                </select>
+              </div>
+            )}
+
+            {/* ✅ [수정] 현재 로그인 권한 기준으로 공지 상단 고정 체크박스 표시 */}
+            {currentUser.role === 'ADMIN' && (
+              <label className="pin-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={editIsPinned}
+                  onChange={(e) => setEditIsPinned(e.target.checked)}
+                />
+                📌 중요 공지로 상단 고정 (Notice Pinning)
+              </label>
+            )}
+
+            <textarea
+              placeholder="내용을 입력하세요..."
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              rows={8}
+              className="write-textarea"
+              required
+            />
+
+            <div className="write-btn-group">
+              <button type="button" onClick={() => setViewMode('detail')} className="cancel-btn">
+                취소
+              </button>
+              <button type="submit" className="submit-btn">
+                수정 완료
+              </button>
+            </div>
+          </form>
         </main>
       )}
 
@@ -596,7 +886,7 @@ export const CommunityBoard: React.FC = () => {
             <div className="write-row">
               <select
                 value={newCategory}
-                onChange={e => setNewCategory(e.target.value as Category)}
+                onChange={(e) => setNewCategory(e.target.value as Category)}
                 className="write-category-select"
               >
                 <option value="원두/재고">원두/재고</option>
@@ -609,7 +899,7 @@ export const CommunityBoard: React.FC = () => {
                 type="text"
                 placeholder="글 제목을 입력하세요"
                 value={newTitle}
-                onChange={e => setNewTitle(e.target.value)}
+                onChange={(e) => setNewTitle(e.target.value)}
                 className="write-title-input"
                 required
               />
@@ -624,7 +914,7 @@ export const CommunityBoard: React.FC = () => {
               />
               <select
                 value={selectedBranch}
-                onChange={e => setSelectedBranch(e.target.value)}
+                onChange={(e) => setSelectedBranch(e.target.value)}
                 className="write-category-select"
                 style={{ width: '100%', flex: 1, backgroundColor: '#FFF' }}
               >
@@ -636,12 +926,13 @@ export const CommunityBoard: React.FC = () => {
               </select>
             </div>
 
+            {/* ✅ [수정] 현재 로그인 권한 기준으로 공지 상단 고정 체크박스 표시 */}
             {currentUser.role === 'ADMIN' && (
               <label className="pin-checkbox-label">
-                <input 
-                  type="checkbox" 
-                  checked={newIsPinned} 
-                  onChange={e => setNewIsPinned(e.target.checked)} 
+                <input
+                  type="checkbox"
+                  checked={newIsPinned}
+                  onChange={(e) => setNewIsPinned(e.target.checked)}
                 />
                 📌 중요 공지로 상단 고정 (Notice Pinning)
               </label>
@@ -650,7 +941,7 @@ export const CommunityBoard: React.FC = () => {
             <textarea
               placeholder="내용을 입력하세요..."
               value={newContent}
-              onChange={e => setNewContent(e.target.value)}
+              onChange={(e) => setNewContent(e.target.value)}
               rows={8}
               className="write-textarea"
               required
@@ -664,7 +955,7 @@ export const CommunityBoard: React.FC = () => {
 
               {attachedFiles.length > 0 && (
                 <div className="attached-files-preview">
-                  {attachedFiles.map(file => (
+                  {attachedFiles.map((file) => (
                     <div key={file.id} className="preview-chip">
                       <span>{file.name}</span>
                       <X size={14} onClick={() => handleRemoveFile(file.id)} className="chip-remove" />
@@ -675,17 +966,10 @@ export const CommunityBoard: React.FC = () => {
             </div>
 
             <div className="write-btn-group">
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className="cancel-btn"
-              >
+              <button type="button" onClick={() => setViewMode('list')} className="cancel-btn">
                 취소
               </button>
-              <button
-                type="submit"
-                className="submit-btn"
-              >
+              <button type="submit" className="submit-btn">
                 등록하기
               </button>
             </div>
