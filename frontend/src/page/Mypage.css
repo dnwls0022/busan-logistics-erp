@@ -1,0 +1,710 @@
+.mypage-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: #3e2723;
+  box-sizing: border-box;
+}
+
+.mypage-header {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.mypage-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #3e2723;
+  margin-bottom: 8px;
+}
+
+.mypage-subtitle {
+  font-size: 14px;
+  color: #795548;
+  margin: 0;
+}
+
+.card {
+  background-color: #fffdf9;
+  border: 1px solid #d7ccc8;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(44, 30, 26, 0.04);
+}
+
+.card-top-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #efebe9;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.profile-info-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-avatar {
+  font-size: 44px;
+  background-color: #efebe9;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid #d7ccc8;
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.profile-avatar:hover {
+  border-color: #5d4037;
+  transform: scale(1.03);
+}
+
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-photo-btn {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid #d7ccc8;
+  background-color: #fff;
+  color: #5d4037;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.profile-photo-btn:hover {
+  background-color: #efebe9;
+}
+
+.profile-file-input-hidden {
+  display: none;
+}
+
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.profile-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: #3e2723;
+}
+
+.profile-name-guest {
+  font-size: 20px;
+  margin-top: 4px;
+}
+
+.branch-badge {
+  background-color: #efebe9;
+  color: #5d4037;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  border: 1px solid #d7ccc8;
+}
+
+.profile-role {
+  font-size: 13px;
+  color: #795548;
+  margin: 0;
+}
+
+.action-buttons-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.signup-button {
+  background-color: #fff;
+  border: 1px solid #8d6e63;
+  color: #5d4037;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.signup-button:hover {
+  background-color: #efebe9;
+}
+
+.auth-button-login {
+  background-color: #5d4037;
+  border: none;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.auth-button-login:hover {
+  background-color: #3e2723;
+}
+
+.auth-button-logout {
+  background-color: #d32f2f;
+  border: none;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.auth-button-logout:hover {
+  background-color: #c62828;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #3e2723;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.section-title-toggle {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f2ef;
+  font-size: 13px;
+}
+
+.info-row-last {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-size: 13px;
+}
+
+.info-label {
+  color: #8d6e63;
+  font-weight: 600;
+}
+
+.info-value {
+  color: #3e2723;
+  font-weight: 500;
+}
+
+.status-online {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.info-footer-wrap {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.security-card-margin {
+  margin-top: 20px;
+}
+
+.security-title-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.security-title-reset {
+  margin-bottom: 10px !important;
+}
+
+.security-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  border: 1px solid #d7ccc8;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.security-badge {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* 주요 서비스 및 빠른 바로가기 그리드 스타일 */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.service-card {
+  background: #fff;
+  border: 1px solid #d7ccc8;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.service-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.service-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #3e2723;
+  margin-bottom: 4px;
+}
+
+.service-desc {
+  font-size: 12px;
+  color: #795548;
+}
+
+.quick-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.quick-menu-btn {
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #8d6e63;
+  border-radius: 8px;
+  color: #3e2723;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: left;
+}
+
+.quick-menu-btn:hover {
+  background: #efebe9;
+}
+
+/* 모달 스타일 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fffdf9;
+  border-radius: 12px;
+  padding: 24px;
+  width: 380px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.login-modal-width {
+  width: 400px;
+}
+
+.modal-close-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 5px;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #795548;
+}
+
+.modal-header-wrap {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-top-subtitle {
+  font-size: 12px;
+  color: #795548;
+}
+
+.modal-top-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #3e2723;
+  margin: 4px 0 0 0;
+}
+
+.login-tabs-wrap {
+  display: flex;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #d7ccc8;
+}
+
+.login-tab-btn-active {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid #5d4037;
+  padding: 10px;
+  font-weight: 700;
+  color: #5d4037;
+  cursor: pointer;
+}
+
+.login-tab-btn-inactive {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px;
+  font-weight: 500;
+  color: #8d6e63;
+  cursor: pointer;
+}
+
+.login-form-layout, .signup-form-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #d7ccc8;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.login-submit-button, .submit-button {
+  background-color: #5d4037;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13px;
+  width: 100%;
+  transition: 0.2s;
+}
+
+.login-submit-button:hover, .submit-button:hover {
+  background-color: #3e2723;
+}
+
+.find-credentials-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0 10px 0;
+  font-size: 13px;
+  color: #666666;
+}
+
+.find-link {
+  cursor: pointer;
+}
+
+.find-link:hover {
+  text-decoration: underline;
+  color: #3e2723;
+}
+
+.find-divider {
+  color: #ccc;
+  font-size: 12px;
+}
+
+.find-result-box {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #efebe9;
+  border-radius: 6px;
+  font-size: 13px;
+  text-align: center;
+  color: #3e2723;
+  font-weight: bold;
+}
+
+.oauth-section-wrap {
+  margin-top: 20px;
+  border-top: 1px solid #efebe9;
+  padding-top: 15px;
+  text-align: center;
+}
+
+.oauth-section-label {
+  font-size: 12px;
+  color: #8d6e63;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.oauth-buttons-wrap {
+  display: flex;
+  gap: 8px;
+}
+
+.oauth-btn-google, .oauth-btn-naver, .oauth-btn-kakao {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #d7ccc8;
+  cursor: pointer;
+}
+
+.oauth-btn-google { background-color: #fff; color: #444; }
+.oauth-btn-naver { background-color: #03c75a; color: #fff; border: none; }
+.oauth-btn-kakao { background-color: #fee500; color: #3c1e1e; border: none; }
+
+.edit-form-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-group-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8d6e63;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.form-buttons-wrap {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.cancel-button {
+  flex: 1;
+  background-color: #f5f2ef;
+  color: #795548;
+  border: 1px solid #d7ccc8;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.signup-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.signup-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #3e2723;
+  margin: 0;
+}
+
+.signup-submit-margin {
+  margin-top: 5px;
+}
+
+/* 알림 수신 설정 토글 버튼 스타일 */
+.notification-row {
+  align-items: center;
+}
+
+.toggle-btn-on {
+  background-color: #2e7d32;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.toggle-btn-on:hover {
+  background-color: #1b5e20;
+}
+
+.toggle-btn-off {
+  background-color: #d7ccc8;
+  color: #5d4037;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.toggle-btn-off:hover {
+  background-color: #bcaaa4;
+}
+
+/* 14번: 내 활동 내역 요약 스타일 */
+.activity-tabs-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #efebe9;
+  padding-bottom: 8px;
+}
+
+.activity-tab-btn-active {
+  background-color: #5d4037;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.activity-tab-btn-inactive {
+  background-color: #f5f2ef;
+  color: #795548;
+  border: 1px solid #d7ccc8;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.activity-list-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  padding: 10px 12px;
+  border: 1px solid #e0d8d0;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.activity-item:hover {
+  background-color: #f9f6f0;
+  border-color: #8d6e63;
+}
+
+.activity-item-title {
+  color: #3e2723;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+}
+
+.activity-item-date {
+  color: #8d6e63;
+  font-size: 11px;
+}
+
+.activity-empty {
+  text-align: center;
+  color: #8d6e63;
+  font-size: 13px;
+  padding: 15px 0;
+  margin: 0;
+}
+
+/* 12번: 회원 탈퇴 버튼 스타일 */
+.withdrawal-area {
+  margin-top: 15px;
+  padding-top: 12px;
+  border-top: 1px dashed #d7ccc8;
+  text-align: right;
+}
+
+.withdrawal-btn {
+  background: none;
+  border: none;
+  color: #d32f2f;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+.withdrawal-btn:hover {
+  background-color: #ffebee;
+  text-decoration: underline;
+}
